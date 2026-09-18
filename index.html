@@ -1,0 +1,438 @@
+<title>นโยบายความเป็นส่วนตัว ร้านเด็กกินเส้น</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Sarabun:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:   #FBF9F6;
+    --surface: #FFFFFF;
+    --ink:     #1C1714;
+    --ink-2:   #5F564E;
+    --ink-3:   #8A8078;
+    --line:    #E7DFD6;
+    --accent:  #8C2F26;
+    --accent-2:#F4E8E4;
+    --note:    #2F6B4F;
+    --note-bg: #E9F1EC;
+    --radius: 14px;
+    --serif: "Noto Serif Thai", "Leelawadee UI", Georgia, serif;
+    --sans: "Sarabun", "Leelawadee UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #141110;
+      --surface: #1D1917;
+      --ink:     #F1EBE5;
+      --ink-2:   #ADA299;
+      --ink-3:   #7E746C;
+      --line:    #302A26;
+      --accent:  #E4917F;
+      --accent-2:#2B1E1A;
+      --note:    #8FC7A9;
+      --note-bg: #1B2620;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:   #141110;
+    --surface: #1D1917;
+    --ink:     #F1EBE5;
+    --ink-2:   #ADA299;
+    --ink-3:   #7E746C;
+    --line:    #302A26;
+    --accent:  #E4917F;
+    --accent-2:#2B1E1A;
+    --note:    #8FC7A9;
+    --note-bg: #1B2620;
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.75;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap {
+    max-width: 39rem;
+    margin: 0 auto;
+    padding-inline: 20px;
+    padding-block: 0 72px;
+  }
+  a { color: var(--accent); }
+  h1, h2, h3 { font-family: var(--serif); text-wrap: balance; line-height: 1.4; }
+
+  /* ---- หัวเอกสาร ---- */
+  header.doc { padding-block: 40px 28px; }
+  .eyebrow {
+    font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin: 0 0 14px;
+  }
+  h1 { font-size: clamp(27px, 7vw, 37px); margin: 0 0 6px; font-weight: 700; }
+  .shop { font-size: 19px; color: var(--ink-2); margin: 0 0 22px; }
+  .noodle { display: flex; flex-direction: column; gap: 3px; margin: 0 0 22px; }
+  .noodle span { height: 2px; background: var(--accent); opacity: .85; border-radius: 2px; }
+  .noodle span:nth-child(1) { width: 62px; }
+  .noodle span:nth-child(2) { width: 38px; opacity: .55; }
+  .noodle span:nth-child(3) { width: 84px; opacity: .3; }
+
+  .facts { display: grid; gap: 12px; margin: 0; }
+  .facts div { display: grid; grid-template-columns: 8.5rem 1fr; gap: 10px; align-items: start; }
+  .facts dt { color: var(--ink-3); font-size: 14.5px; }
+  .facts dd { margin: 0; font-size: 15.5px; }
+
+  /* ---- การ์ดใช้สิทธิ ---- */
+  .act {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 22px; margin: 30px 0 8px;
+  }
+  .act h2 { font-size: 19px; margin: 0 0 6px; }
+  .act p { margin: 0 0 16px; color: var(--ink-2); font-size: 15.5px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: var(--accent); color: var(--paper); text-decoration: none;
+    font-weight: 600; font-size: 16px; padding: 13px 22px; border-radius: 999px;
+  }
+  .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .act small { display: block; margin-top: 14px; color: var(--ink-3); font-size: 13.5px; line-height: 1.6; }
+
+  /* ---- สารบัญ ---- */
+  details.toc {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--surface); margin: 26px 0 40px; overflow: hidden;
+  }
+  details.toc summary {
+    cursor: pointer; padding: 15px 20px; font-weight: 600; font-size: 15.5px;
+    list-style: none; display: flex; justify-content: space-between; align-items: center;
+  }
+  details.toc summary::-webkit-details-marker { display: none; }
+  details.toc summary::after { content: "＋"; color: var(--accent); font-size: 17px; }
+  details.toc[open] summary::after { content: "－"; }
+  details.toc ol { margin: 0; padding: 0 20px 18px 20px; list-style: none; counter-reset: t; }
+  details.toc li { counter-increment: t; border-top: 1px solid var(--line); }
+  details.toc a {
+    display: grid; grid-template-columns: 2rem 1fr; gap: 8px;
+    padding: 9px 0; text-decoration: none; color: var(--ink); font-size: 15.5px;
+  }
+  details.toc a::before { content: counter(t); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  /* ---- ส่วนเนื้อหา ---- */
+  section { scroll-margin-top: 20px; padding-block: 26px 0; }
+  section > h2 {
+    font-size: 21px; margin: 0 0 4px; display: grid;
+    grid-template-columns: 2.3rem 1fr; gap: 6px; align-items: baseline;
+  }
+  section > h2 .num {
+    font-size: 14px; font-family: var(--sans); font-weight: 600;
+    color: var(--accent); font-variant-numeric: tabular-nums;
+  }
+  section > h2 + .rule { height: 1px; background: var(--line); margin: 0 0 16px; }
+  section p { margin: 0 0 14px; }
+  section ul, section ol { margin: 0 0 14px; padding-left: 1.3em; }
+  section li { margin-bottom: 7px; }
+  h3 { font-size: 16.5px; margin: 22px 0 8px; }
+
+  .note {
+    background: var(--note-bg); border-left: 3px solid var(--note);
+    padding: 13px 16px; border-radius: 0 10px 10px 0; margin: 0 0 16px;
+    font-size: 15.5px; color: var(--ink);
+  }
+  .warn {
+    background: var(--accent-2); border-left: 3px solid var(--accent);
+    padding: 13px 16px; border-radius: 0 10px 10px 0; margin: 0 0 16px; font-size: 15.5px;
+  }
+
+  /* ---- ตารางระยะเวลา ---- */
+  .keep { display: grid; gap: 10px; margin: 0 0 16px; }
+  .keep div {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .keep dt { font-weight: 600; font-size: 15.5px; margin-bottom: 3px; }
+  .keep dd { margin: 0; color: var(--ink-2); font-size: 15px; }
+
+  .form-box {
+    border: 1px dashed var(--line); border-radius: var(--radius);
+    padding: 18px; margin: 0 0 16px; background: var(--surface);
+  }
+  .form-box p.lbl {
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0 0 10px; font-weight: 600;
+  }
+  .check { display: grid; grid-template-columns: 1.6rem 1fr; gap: 6px; margin-bottom: 9px; font-size: 15.5px; }
+  .check span:first-child { color: var(--accent); }
+
+  footer {
+    margin-top: 46px; padding-top: 22px; border-top: 1px solid var(--line);
+    color: var(--ink-3); font-size: 14px;
+  }
+  footer a { color: var(--ink-2); }
+  .top { display: inline-block; margin-top: 18px; font-size: 14px; }
+</style>
+
+<div class="wrap">
+
+  <header class="doc" id="top">
+    <p class="eyebrow">นโยบายคุ้มครองข้อมูลส่วนบุคคล</p>
+    <h1>ข้อมูลของคุณ<br>ร้านเก็บอะไรบ้าง</h1>
+    <p class="shop">ร้านเด็กกินเส้น</p>
+    <div class="noodle" aria-hidden="true"><span></span><span></span><span></span></div>
+
+    <dl class="facts">
+      <div><dt>ผู้ควบคุมข้อมูล</dt><dd>ทศพร เพื่อนฝูง ในนามร้านเด็กกินเส้น</dd></div>
+      <div><dt>ที่อยู่</dt><dd>56/6 ทรัพย์พัฒนา ต.บางเมือง อ.เมืองสมุทรปราการ จ.สมุทรปราการ 10270</dd></div>
+      <div><dt>ติดต่อ</dt><dd>LINE Official Account @728kuaub</dd></div>
+      <div><dt>วันที่มีผลใช้บังคับ</dt><dd>17 กันยายน 2569</dd></div>
+      <div><dt>ครอบคลุม</dt><dd>ระบบสมาชิก กล้องวงจรปิด การติดต่อออนไลน์ และการใช้ภาพหรือเสียงเพื่อเผยแพร่ทางสื่อสังคมออนไลน์</dd></div>
+    </dl>
+
+    <div class="act">
+      <h2>ใช้สิทธิของคุณ</h2>
+      <p>ขอดู ขอแก้ ขอลบข้อมูล หรือถอนความยินยอมได้ตลอดเวลา ทักมาที่ LINE ของร้านได้เลย</p>
+      <a class="btn" href="https://lin.ee/ZpccLss">ทักร้านผ่าน LINE <span aria-hidden="true">→</span></a>
+      <small>โปรดแจ้งชื่อ–นามสกุล หมายเลขสมาชิก หรือข้อมูลที่จำเป็นต่อการยืนยันตัวตน โดยไม่ต้องส่งภาพบัตรประชาชน เว้นแต่มีเหตุจำเป็นและร้านได้แจ้งวิธีส่งที่ปลอดภัยแล้ว</small>
+    </div>
+  </header>
+
+  <details class="toc">
+    <summary>สารบัญ 19 หัวข้อ</summary>
+    <ol>
+      <li><a href="#s1">ผู้ควบคุมข้อมูลส่วนบุคคล</a></li>
+      <li><a href="#s2">บุคคลที่นโยบายนี้ครอบคลุม</a></li>
+      <li><a href="#s3">ข้อมูลที่ร้านอาจเก็บรวบรวม</a></li>
+      <li><a href="#s4">วัตถุประสงค์ในการใช้ข้อมูลสมาชิก</a></li>
+      <li><a href="#s5">วัตถุประสงค์ของกล้องวงจรปิด</a></li>
+      <li><a href="#s6">การถ่ายภาพ วิดีโอ และเสียงเพื่อทำคอนเทนต์</a></li>
+      <li><a href="#s7">การใช้ภาพและเสียงของผู้เยาว์</a></li>
+      <li><a href="#s8">ฐานกฎหมายในการประมวลผล</a></li>
+      <li><a href="#s9">การเปิดเผยข้อมูลส่วนบุคคล</a></li>
+      <li><a href="#s10">การเผยแพร่ผ่านสื่อสังคมออนไลน์</a></li>
+      <li><a href="#s11">ระยะเวลาเก็บรักษาข้อมูล</a></li>
+      <li><a href="#s12">มาตรการรักษาความปลอดภัย</a></li>
+      <li><a href="#s13">สิทธิของเจ้าของข้อมูล</a></li>
+      <li><a href="#s14">วิธีติดต่อและใช้สิทธิ</a></li>
+      <li><a href="#s15">เหตุละเมิดข้อมูลส่วนบุคคล</a></li>
+      <li><a href="#s16">การเปลี่ยนแปลงนโยบาย</a></li>
+      <li><a href="#s17">ข้อความรับทราบสำหรับระบบ</a></li>
+      <li><a href="#s18">ความยินยอมรับข่าวสารการตลาด</a></li>
+      <li><a href="#s19">ความยินยอมใช้ภาพและเสียงเพื่อทำคอนเทนต์</a></li>
+    </ol>
+  </details>
+
+  <p>ร้านเด็กกินเส้นให้ความสำคัญกับการคุ้มครองข้อมูลส่วนบุคคลของสมาชิก ลูกค้า ผู้มาติดต่อ บุคคลที่เข้ามาในบริเวณร้าน และบุคคลที่ปรากฏในภาพถ่าย วิดีโอ หรือเสียงของร้าน นโยบายฉบับนี้อธิบายการเก็บรวบรวม ใช้ เปิดเผย จัดเก็บ และคุ้มครองข้อมูลส่วนบุคคล รวมทั้งสิทธิของเจ้าของข้อมูลตามกฎหมาย</p>
+
+  <section id="s1">
+    <h2><span class="num">01</span> ผู้ควบคุมข้อมูลส่วนบุคคล</h2><div class="rule"></div>
+    <p>ผู้ควบคุมข้อมูลส่วนบุคคลคือ นายทศพร เพื่อนฝูง ในนามร้านเด็กกินเส้น ที่อยู่ 56/6 ทรัพย์พัฒนา ต.บางเมือง อ.เมืองสมุทรปราการ จ.สมุทรปราการ 10270 ติดต่อผ่าน LINE Official Account ไอดี @728kuaub หรือลิงก์ <a href="https://lin.ee/ZpccLss">lin.ee/ZpccLss</a></p>
+  </section>
+
+  <section id="s2">
+    <h2><span class="num">02</span> บุคคลที่นโยบายนี้ครอบคลุม</h2><div class="rule"></div>
+    <ol>
+      <li>สมาชิกของร้าน</li>
+      <li>ลูกค้าที่ซื้อสินค้าหรือใช้บริการ</li>
+      <li>ผู้มาติดต่อหรือบุคคลที่เข้ามาในบริเวณร้าน</li>
+      <li>บุคคลที่ปรากฏในภาพจากกล้องวงจรปิด</li>
+      <li>บุคคลที่ปรากฏในภาพถ่าย วิดีโอ หรือเสียงสำหรับจัดทำคอนเทนต์</li>
+      <li>ผู้เยาว์และผู้ใช้อำนาจปกครอง</li>
+      <li>บุคคลที่ติดต่อกับร้านผ่านช่องทางออนไลน์หรือสื่อสังคมออนไลน์</li>
+    </ol>
+  </section>
+
+  <section id="s3">
+    <h2><span class="num">03</span> ข้อมูลที่ร้านอาจเก็บรวบรวม</h2><div class="rule"></div>
+
+    <h3>3.1 ข้อมูลสมาชิก</h3>
+    <ul>
+      <li>ชื่อและนามสกุล หมายเลขโทรศัพท์ และเลขประจำตัวประชาชน 13 หลัก โดยร้านไม่เก็บภาพถ่ายหรือสำเนาบัตรประชาชน</li>
+      <li>หมายเลขหรือรหัสสมาชิก ประวัติสะสมคะแนน ใช้คะแนนแลกสิทธิประโยชน์ และรับของรางวัล</li>
+      <li>วันและเวลาที่สมัคร แก้ไข หรือยกเลิกสมาชิก รวมถึงประวัติการติดต่อและข้อร้องเรียนที่เกี่ยวข้อง</li>
+    </ul>
+    <p>ร้านใช้เลขประจำตัวประชาชนเฉพาะเมื่อจำเป็นต่อการยืนยันตัวบุคคลก่อนแลกหรือรับของรางวัล ป้องกันการใช้สิทธิซ้ำ และตรวจสอบข้อโต้แย้ง พนักงานทั่วไปควรเห็นเพียงข้อมูลที่จำเป็น ระบบควรปกปิดเลขบางส่วน และเปิดดูเลขเต็มได้เฉพาะผู้ได้รับมอบหมาย</p>
+
+    <h3>3.2 ข้อมูลจากกล้องวงจรปิด</h3>
+    <ul>
+      <li>ภาพนิ่งหรือภาพเคลื่อนไหว</li>
+      <li>วัน เวลา ตำแหน่งกล้อง และเหตุการณ์ที่เกิดขึ้นภายในหรือบริเวณโดยรอบร้าน</li>
+    </ul>
+    <p>โดยปกติกล้องวงจรปิดของร้านจะไม่บันทึกเสียง เว้นแต่มีความจำเป็นโดยชอบด้วยกฎหมายและมีป้ายหรือประกาศแจ้งอย่างชัดเจน</p>
+
+    <h3>3.3 ข้อมูลภาพถ่าย วิดีโอ และเสียงสำหรับทำคอนเทนต์</h3>
+    <ul>
+      <li>ภาพถ่าย วิดีโอ และเสียง</li>
+      <li>ชื่อหรือชื่อบัญชีสื่อสังคมออนไลน์ เมื่อเจ้าของข้อมูลเป็นผู้ให้ไว้</li>
+      <li>วันที่และสถานที่บันทึก รวมถึงหลักฐานการให้หรือถอนความยินยอม</li>
+    </ul>
+
+    <h3>3.4 ข้อมูลจากช่องทางออนไลน์</h3>
+    <p>ร้านอาจได้รับชื่อบัญชี รูปโปรไฟล์ ข้อความ ความคิดเห็น ข้อมูลการสั่งซื้อหรือรับบริการ และข้อมูลทางเทคนิคเท่าที่แพลตฟอร์มเก็บ เมื่อบุคคลติดต่อผ่าน TikTok, Facebook, Instagram, LINE Official Account, YouTube, เว็บไซต์ แอปพลิเคชัน หรือช่องทางออนไลน์อื่นของร้าน</p>
+  </section>
+
+  <section id="s4">
+    <h2><span class="num">04</span> วัตถุประสงค์ในการใช้ข้อมูลสมาชิก</h2><div class="rule"></div>
+    <ol>
+      <li>รับสมัครและบริหารจัดการระบบสมาชิก</li>
+      <li>ตรวจสอบและยืนยันตัวบุคคล</li>
+      <li>สะสมคะแนน ใช้คะแนนแลกของรางวัล และรับสิทธิประโยชน์</li>
+      <li>ป้องกันการใช้สิทธิซ้ำ การปลอมแปลง หรือการทุจริต</li>
+      <li>ติดต่อเกี่ยวกับบัญชีสมาชิกหรือการรับของรางวัล</li>
+      <li>ตรวจสอบข้อร้องเรียนหรือข้อโต้แย้ง</li>
+      <li>ปรับปรุงระบบสมาชิกและการให้บริการ</li>
+      <li>ปฏิบัติตามกฎหมายหรือคำสั่งของหน่วยงานที่มีอำนาจ</li>
+      <li>ส่งข่าวสาร โปรโมชั่น หรือการตลาด เมื่อได้รับความยินยอมหรือมีฐานกฎหมายที่เหมาะสม</li>
+    </ol>
+    <div class="note">การไม่ยินยอมรับข่าวสารการตลาด จะไม่กระทบต่อการสมัครสมาชิก การสะสมคะแนน หรือการรับบริการตามปกติ</div>
+  </section>
+
+  <section id="s5">
+    <h2><span class="num">05</span> วัตถุประสงค์ของกล้องวงจรปิด</h2><div class="rule"></div>
+    <ol>
+      <li>รักษาความปลอดภัยในชีวิต ร่างกาย และทรัพย์สิน</li>
+      <li>ป้องกันและตรวจสอบเหตุโจรกรรม การทุจริต หรือเหตุผิดปกติ</li>
+      <li>ตรวจสอบอุบัติเหตุ ข้อร้องเรียน หรือข้อพิพาท</li>
+      <li>ใช้เป็นหลักฐานในการดำเนินคดีหรือให้ความร่วมมือกับเจ้าหน้าที่</li>
+      <li>ควบคุมความปลอดภัยภายในพื้นที่ของร้าน</li>
+    </ol>
+    <p>ร้านจะติดป้ายแจ้งก่อนเข้าสู่พื้นที่กล้อง และจะไม่ติดตั้งกล้องในห้องน้ำ ห้องเปลี่ยนเสื้อผ้า หรือพื้นที่ที่คาดหมายความเป็นส่วนตัวในระดับสูง</p>
+    <div class="warn">ภาพจากกล้องจะไม่ถูกนำไปทำโฆษณาหรือคอนเทนต์โดยอาศัยเพียงป้ายแจ้งกล้อง หากต้องการเผยแพร่ภาพบุคคลที่ระบุตัวได้ ร้านจะขอความยินยอมแยกต่างหาก หรือปกปิดจนไม่สามารถระบุตัวบุคคลได้</div>
+  </section>
+
+  <section id="s6">
+    <h2><span class="num">06</span> การถ่ายภาพ วิดีโอ และเสียงเพื่อทำคอนเทนต์</h2><div class="rule"></div>
+    <p>ร้านอาจบันทึกภาพถ่าย วิดีโอ หรือเสียง เพื่อประชาสัมพันธ์ผ่าน TikTok, Facebook และ Facebook Reels, Instagram และ Instagram Reels, LINE Official Account, YouTube, เว็บไซต์ แอปพลิเคชัน สื่อโฆษณาออนไลน์ สื่อภายในร้าน และช่องทางประชาสัมพันธ์อื่นของร้าน</p>
+    <p>ก่อนบันทึกหรือนำภาพและเสียงของบุคคลที่สามารถระบุตัวได้ไปเผยแพร่ ร้านจะขอความยินยอมโดยชัดแจ้งและแยกต่างหากจากการสมัครสมาชิก การซื้อสินค้า และการรับบริการ ขอบเขตอาจรวมถึงการบันทึก การตัดต่อ ครอป ปรับขนาด ใส่ข้อความ เพลง หรือคำบรรยายอย่างเหมาะสม และการเผยแพร่ผ่านช่องทางที่แจ้ง</p>
+    <div class="note">ร้านจะไม่นำภาพหรือเสียงไปใช้ในลักษณะที่ทำให้บุคคลในภาพได้รับความเสียหาย ถูกดูหมิ่น ถูกเลือกปฏิบัติ หรือได้รับผลกระทบเกินสมควร บุคคลมีสิทธิปฏิเสธโดยไม่กระทบต่อการซื้อสินค้า การรับบริการ คะแนนสมาชิก ของรางวัล หรือสิทธิประโยชน์อื่น</div>
+  </section>
+
+  <section id="s7">
+    <h2><span class="num">07</span> การใช้ภาพและเสียงของผู้เยาว์</h2><div class="rule"></div>
+    <p>กรณีบุคคลในภาพหรือเสียงเป็นผู้เยาว์ ร้านจะขอความยินยอมจากผู้ใช้อำนาจปกครองตามที่กฎหมายกำหนด และหลีกเลี่ยงการเผยแพร่ชื่อเต็ม เลขประจำตัวประชาชน ที่อยู่ พิกัดบ้าน หมายเลขโทรศัพท์ ตารางเรียน ข้อมูลสุขภาพ ข้อมูลครอบครัว หรือข้อมูลที่อาจใช้ติดตาม ระบุตำแหน่ง หรือทำให้ผู้เยาว์ได้รับอันตราย</p>
+  </section>
+
+  <section id="s8">
+    <h2><span class="num">08</span> ฐานกฎหมายในการประมวลผลข้อมูล</h2><div class="rule"></div>
+    <ol>
+      <li>ความจำเป็นเพื่อการปฏิบัติตามสัญญาหรือการให้บริการ</li>
+      <li>ความจำเป็นเพื่อประโยชน์โดยชอบด้วยกฎหมายของร้านหรือบุคคลอื่น โดยคำนึงถึงสิทธิของเจ้าของข้อมูล</li>
+      <li>ความจำเป็นเพื่อปฏิบัติตามกฎหมาย</li>
+      <li>ความจำเป็นเพื่อป้องกันหรือระงับอันตรายต่อชีวิต ร่างกาย หรือสุขภาพ</li>
+      <li>ความยินยอมของเจ้าของข้อมูล โดยเฉพาะการตลาดและการเผยแพร่ภาพหรือเสียงเพื่อทำคอนเทนต์</li>
+    </ol>
+    <div class="warn">การเข้ามาใช้บริการหรืออยู่ภายในพื้นที่กล้องวงจรปิด ไม่ถือเป็นการยินยอมให้นำภาพหรือเสียงไปโฆษณาหรือเผยแพร่ทางสื่อสังคมออนไลน์</div>
+  </section>
+
+  <section id="s9">
+    <h2><span class="num">09</span> การเปิดเผยข้อมูลส่วนบุคคล</h2><div class="rule"></div>
+    <ol>
+      <li>เจ้าของร้านและพนักงานที่ได้รับมอบหมาย</li>
+      <li>ผู้ให้บริการระบบสมาชิก ฐานข้อมูล ระบบคลาวด์ หรือระบบเทคโนโลยี</li>
+      <li>ผู้ให้บริการด้านการตลาด การจัดทำสื่อ หรือการจัดการบัญชีสื่อสังคมออนไลน์</li>
+      <li>ที่ปรึกษา นักบัญชี ผู้สอบบัญชี ทนายความ หรือผู้ให้บริการวิชาชีพ</li>
+      <li>บริษัทประกันภัยหรือบุคคลที่เกี่ยวข้องกับการตรวจสอบเหตุ</li>
+      <li>ตำรวจ ศาล หน่วยงานของรัฐ หรือผู้มีอำนาจตามกฎหมาย</li>
+      <li>บุคคลอื่นเมื่อได้รับความยินยอมหรือมีกฎหมายอนุญาต</li>
+    </ol>
+    <p>ร้านจะกำหนดให้ผู้ให้บริการภายนอกใช้ข้อมูลตามวัตถุประสงค์ที่ได้รับมอบหมาย มีมาตรการรักษาความปลอดภัย และไม่ใช้ข้อมูลเพื่อวัตถุประสงค์ส่วนตัว</p>
+  </section>
+
+  <section id="s10">
+    <h2><span class="num">10</span> การเผยแพร่ผ่านสื่อสังคมออนไลน์</h2><div class="rule"></div>
+    <p>เมื่อภาพ วิดีโอ เสียง หรือข้อความถูกเผยแพร่ บุคคลทั่วไปอาจเข้าถึง บันทึก คัดลอก ส่งต่อ แสดงความคิดเห็น หรือเผยแพร่ซ้ำได้ตามลักษณะของแพลตฟอร์ม ร้านจะใช้ความระมัดระวังและตั้งค่าการเผยแพร่ให้เหมาะสม แต่อาจไม่สามารถควบคุมบุคคลภายนอกหรือแพลตฟอร์มได้ทั้งหมด</p>
+    <p>เมื่อได้รับคำขอถอนความยินยอม ร้านจะหยุดใช้ข้อมูลในอนาคต และลบหรือซ่อนเนื้อหาจากช่องทางที่ร้านควบคุมได้ภายในระยะเวลาที่เหมาะสม แต่อาจไม่สามารถลบสำเนาที่บุคคลอื่นบันทึกหรือเผยแพร่ต่อไปแล้วได้</p>
+  </section>
+
+  <section id="s11">
+    <h2><span class="num">11</span> ระยะเวลาเก็บรักษาข้อมูล</h2><div class="rule"></div>
+    <dl class="keep">
+      <div><dt>ข้อมูลสมาชิก</dt><dd>ตลอดอายุสมาชิก และลบ ทำลาย หรือทำให้ไม่สามารถระบุตัวบุคคลได้ภายใน 90 วันหลังยกเลิก เว้นแต่จำเป็นตามกฎหมาย ข้อร้องเรียน หรือสิทธิเรียกร้อง</dd></div>
+      <div><dt>กล้องวงจรปิด</dt><dd>ตามปกติไม่เกิน 30 วัน เว้นแต่เกี่ยวข้องกับเหตุการณ์ ข้อร้องเรียน ข้อพิพาท หรือคดี</dd></div>
+      <div><dt>ภาพ วิดีโอ และเสียงสำหรับคอนเทนต์</dt><dd>ตลอดระยะเวลาที่จำเป็นตามความยินยอม หรือจนกว่าจะถอนความยินยอม</dd></div>
+      <div><dt>หลักฐานการให้หรือถอนความยินยอม</dt><dd>ไม่เกิน 5 ปี เพื่อพิสูจน์การดำเนินการ เว้นแต่กฎหมายกำหนดระยะเวลาอื่น</dd></div>
+      <div><dt>ข้อมูลการติดต่อและข้อร้องเรียน</dt><dd>เท่าที่จำเป็นต่อการตอบคำถาม แก้ไขข้อร้องเรียน ปฏิบัติตามกฎหมาย หรือใช้สิทธิเรียกร้อง</dd></div>
+    </dl>
+  </section>
+
+  <section id="s12">
+    <h2><span class="num">12</span> มาตรการรักษาความปลอดภัย</h2><div class="rule"></div>
+    <ul>
+      <li>จำกัดสิทธิ์การเข้าถึงตามหน้าที่ และแยกบัญชีผู้ใช้งานของพนักงาน</li>
+      <li>ปกปิดเลขประจำตัวประชาชนบนหน้าจอ และบันทึกประวัติการเปิดดู แก้ไข ส่งออก หรือลบ</li>
+      <li>ใช้รหัสผ่าน เข้ารหัสข้อมูลหรือการเชื่อมต่อ และสำรองข้อมูลเมื่อระบบรองรับ</li>
+      <li>ทบทวนสิทธิ์เมื่อพนักงานเปลี่ยนหน้าที่หรือพ้นสภาพ</li>
+      <li>ลบหรือทำลายข้อมูลเมื่อหมดความจำเป็น และมีขั้นตอนรับมือเหตุละเมิดข้อมูลส่วนบุคคล</li>
+    </ul>
+  </section>
+
+  <section id="s13">
+    <h2><span class="num">13</span> สิทธิของเจ้าของข้อมูลส่วนบุคคล</h2><div class="rule"></div>
+    <ol>
+      <li>ขอเข้าถึงและขอรับสำเนาข้อมูล</li>
+      <li>ขอแก้ไขข้อมูลให้ถูกต้องและเป็นปัจจุบัน</li>
+      <li>ขอลบ ทำลาย หรือทำให้ไม่สามารถระบุตัวบุคคล</li>
+      <li>ขอระงับหรือจำกัดการใช้ข้อมูล</li>
+      <li>คัดค้านการประมวลผลข้อมูล</li>
+      <li>ขอรับหรือโอนข้อมูลในกรณีที่กฎหมายกำหนด</li>
+      <li>ถอนความยินยอมได้ตลอดเวลา</li>
+      <li>ร้องเรียนต่อสำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคล</li>
+    </ol>
+    <p>การถอนความยินยอมไม่กระทบต่อการประมวลผลที่ดำเนินการโดยชอบก่อนถอน ร้านอาจขอข้อมูลเพิ่มเติมเท่าที่จำเป็นเพื่อยืนยันตัวตนและป้องกันการเข้าถึงข้อมูลโดยมิชอบ</p>
+  </section>
+
+  <section id="s14">
+    <h2><span class="num">14</span> วิธีติดต่อและใช้สิทธิ</h2><div class="rule"></div>
+    <ul>
+      <li>LINE Official Account: @728kuaub</li>
+      <li>ลิงก์ติดต่อ: <a href="https://lin.ee/ZpccLss">lin.ee/ZpccLss</a></li>
+      <li>ที่อยู่: 56/6 ทรัพย์พัฒนา ต.บางเมือง อ.เมืองสมุทรปราการ จ.สมุทรปราการ 10270</li>
+    </ul>
+    <p>โปรดระบุรายละเอียดคำขอ ชื่อและนามสกุล หมายเลขสมาชิก หรือข้อมูลที่จำเป็นต่อการยืนยันตัวตน โดยไม่จำเป็นต้องส่งภาพบัตรประชาชน เว้นแต่มีเหตุจำเป็นและร้านได้แจ้งวิธีส่งข้อมูลที่ปลอดภัยแล้ว</p>
+  </section>
+
+  <section id="s15">
+    <h2><span class="num">15</span> เหตุละเมิดข้อมูลส่วนบุคคล</h2><div class="rule"></div>
+    <p>หากพบเหตุข้อมูลสูญหาย ถูกเข้าถึง เปิดเผย เปลี่ยนแปลง หรือทำลายโดยไม่ได้รับอนุญาต ร้านจะตรวจสอบและแก้ไขโดยเร็ว รวมทั้งแจ้งหน่วยงานที่เกี่ยวข้องและเจ้าของข้อมูลเมื่อกฎหมายกำหนด</p>
+  </section>
+
+  <section id="s16">
+    <h2><span class="num">16</span> การเปลี่ยนแปลงนโยบาย</h2><div class="rule"></div>
+    <p>ร้านอาจแก้ไขนโยบายเพื่อให้สอดคล้องกับการดำเนินงาน เทคโนโลยี และกฎหมาย โดยจะแจ้งฉบับปรับปรุงผ่านหน้าร้าน ระบบสมาชิก LINE Official Account เว็บไซต์ หรือช่องทางที่เหมาะสม การแก้ไขจะไม่ทำให้ร้านนำข้อมูลไปใช้เพื่อวัตถุประสงค์ใหม่ที่ต้องได้รับความยินยอม โดยไม่ได้ขอความยินยอมเพิ่มเติม</p>
+  </section>
+
+  <section id="s17">
+    <h2><span class="num">17</span> ข้อความรับทราบสำหรับระบบ</h2><div class="rule"></div>
+    <div class="form-box">
+      <p class="lbl">ข้อความที่ปรากฏในแบบฟอร์มของร้าน</p>
+      <div class="check"><span>☐</span><span>ข้าพเจ้าได้รับทราบและอ่านนโยบายคุ้มครองข้อมูลส่วนบุคคลของร้านเด็กกินเส้นแล้ว</span></div>
+    </div>
+    <div class="warn">การรับทราบนโยบายไม่เท่ากับการยินยอมให้นำภาพหรือเสียงไปเผยแพร่หรือจัดทำคอนเทนต์ การเผยแพร่ต้องขอความยินยอมแยกต่างหาก</div>
+  </section>
+
+  <section id="s18">
+    <h2><span class="num">18</span> ความยินยอมรับข่าวสารการตลาด</h2><div class="rule"></div>
+    <div class="form-box">
+      <p class="lbl">ข้อความที่ปรากฏในแบบฟอร์มของร้าน</p>
+      <div class="check"><span>☐</span><span>ยินยอมรับข่าวสาร โปรโมชั่น และสิทธิประโยชน์จากร้านเด็กกินเส้น</span></div>
+      <div class="check"><span>☐</span><span>ไม่ยินยอมรับข่าวสาร โปรโมชั่น และสิทธิประโยชน์</span></div>
+    </div>
+    <div class="note">การปฏิเสธหรือถอนความยินยอมด้านการตลาด จะไม่กระทบต่อการสมัครสมาชิก การสะสมคะแนน การซื้อสินค้า หรือการรับบริการ</div>
+  </section>
+
+  <section id="s19">
+    <h2><span class="num">19</span> ความยินยอมใช้ภาพและเสียงเพื่อทำคอนเทนต์</h2><div class="rule"></div>
+    <div class="form-box">
+      <p class="lbl">ข้อความที่ปรากฏในแบบฟอร์มของร้าน</p>
+      <div class="check"><span>☐</span><span>ยินยอมให้ร้านบันทึกและใช้ภาพ วิดีโอ หรือเสียงของข้าพเจ้า เพื่อเผยแพร่และจัดทำคอนเทนต์ประชาสัมพันธ์ตามขอบเขตที่ร้านแจ้ง</span></div>
+      <div class="check"><span>☐</span><span>ไม่ยินยอม</span></div>
+    </div>
+    <div class="note">การให้ความยินยอมนี้แยกออกจากการสมัครสมาชิก การซื้อสินค้า การรับบริการ และการรับสิทธิประโยชน์ทั้งหมด</div>
+  </section>
+
+  <footer>
+    <p><strong>เอกสารอ้างอิง</strong><br>
+      พระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562<br>
+      สำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคล <a href="https://www.pdpc.or.th/">pdpc.or.th</a></p>
+    <p>ร้านเด็กกินเส้น · นโยบายฉบับมีผลใช้บังคับ 17 กันยายน 2569</p>
+    <a class="top" href="#top">↑ กลับขึ้นด้านบน</a>
+  </footer>
+
+</div>
