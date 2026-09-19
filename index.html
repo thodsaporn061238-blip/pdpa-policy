@@ -23,6 +23,7 @@
     --accent-2:#F4E8E4;
     --note:    #2F6B4F;
     --note-bg: #E9F1EC;
+    --line-green: #06C755;
     --radius: 14px;
     --serif: "Noto Serif Thai", "Leelawadee UI", Georgia, serif;
     --sans: "Sarabun", "Leelawadee UI", system-ui, -apple-system, sans-serif;
@@ -178,17 +179,76 @@
   }
   footer a { color: var(--ink-2); }
   .top { display: inline-block; margin-top: 18px; font-size: 14px; }
+  /* ---- แบบฟอร์มความยินยอม ---- */
+  [hidden] { display: none !important; }
+  .consent {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 22px 20px; margin: 4px 0 16px;
+  }
+  .field { display: grid; gap: 6px; margin-bottom: 16px; }
+  .lbl-t { font-weight: 600; font-size: 15px; margin: 0; }
+  .opt-note { font-weight: 400; color: var(--ink-3); }
+  .consent input[type="text"] {
+    font: inherit; font-size: 16px; padding: 11px 13px; width: 100%; box-sizing: border-box;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink);
+  }
+  .consent input[type="text"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .opt {
+    display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start;
+    padding: 14px 0; border-top: 1px solid var(--line); cursor: pointer; font-size: 16px; line-height: 1.6;
+  }
+  .opt input { width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--accent); }
+  .opt b { display: block; font-weight: 600; }
+  .opt .sub { display: block; color: var(--ink-2); font-size: 14.5px; margin-top: 3px; }
+  .opt .req {
+    display: inline-block; margin-left: 8px; font-size: 12px; font-weight: 600; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 999px; padding: 0 8px; line-height: 1.6; vertical-align: 2px;
+  }
+  .opt-sm { border-top: 0; padding-top: 6px; }
+  .extra { margin: 0 0 4px 38px; }
+  .plats { border: 0; margin: 0 0 6px; padding: 0; }
+  .plats legend { font-size: 14.5px; color: var(--ink-2); padding: 0; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px; cursor: pointer; font-size: 15px;
+    border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; background: var(--paper);
+  }
+  .chip input { width: 17px; height: 17px; margin: 0; accent-color: var(--accent); }
+  .link-btn {
+    background: none; border: 0; padding: 8px 0 0; font: inherit; font-size: 14.5px;
+    color: var(--accent); text-decoration: underline; cursor: pointer;
+  }
+  .err { color: var(--accent); font-size: 14.5px; font-weight: 600; min-height: 1.4em; margin: 8px 0 0; }
+  .send { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
+  .btn-line {
+    display: inline-flex; align-items: center; background: var(--line-green); color: #FFFFFF;
+    border: 0; font: inherit; font-weight: 600; font-size: 16px; padding: 13px 24px;
+    border-radius: 999px; cursor: pointer; text-decoration: none;
+  }
+  .btn-ghost {
+    display: inline-flex; align-items: center; background: transparent; color: var(--ink);
+    border: 1px solid var(--line); font: inherit; font-size: 15px; padding: 12px 18px;
+    border-radius: 999px; cursor: pointer; text-decoration: none;
+  }
+  .btn-line:focus-visible, .btn-ghost:focus-visible, .link-btn:focus-visible {
+    outline: 3px solid var(--accent); outline-offset: 3px;
+  }
+  .preview { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .preview pre {
+    white-space: pre-wrap; word-break: break-word; font-family: var(--sans); font-size: 14.5px;
+    line-height: 1.65; background: var(--paper); border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px 14px; margin: 8px 0 0;
+  }
+  .hint { color: var(--ink-3); font-size: 13.5px; line-height: 1.65; margin: 12px 0 0; }
+  .hint a { color: var(--accent); }
 </style>
 <style>
   html { -webkit-text-size-adjust: 100%; }
   img { max-width: 100%; }
-  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <header class="doc" id="top">
+<div class="wrap"><header class="doc" id="top">
     <p class="eyebrow">นโยบายคุ้มครองข้อมูลส่วนบุคคล</p>
     <h1>ข้อมูลของคุณ<br>ร้านเก็บอะไรบ้าง</h1>
     <p class="shop">ร้านเด็กกินเส้น</p>
@@ -205,13 +265,16 @@
     <div class="act">
       <h2>ใช้สิทธิของคุณ</h2>
       <p>ขอดู ขอแก้ ขอลบข้อมูล หรือถอนความยินยอมได้ตลอดเวลา ทักมาที่ LINE ของร้านได้เลย</p>
-      <a class="btn" href="https://lin.ee/ZpccLss">ทักร้านผ่าน LINE <span aria-hidden="true">→</span></a>
+      <div class="send">
+        <a class="btn" href="#s17">กรอกแบบฟอร์มความยินยอม <span aria-hidden="true">↓</span></a>
+        <a class="btn-ghost" href="https://lin.ee/ZpccLss">ทักร้านผ่าน LINE</a>
+      </div>
       <small>โปรดแจ้งชื่อ–นามสกุล หมายเลขสมาชิก หรือข้อมูลที่จำเป็นต่อการยืนยันตัวตน โดยไม่ต้องส่งภาพบัตรประชาชน เว้นแต่มีเหตุจำเป็นและร้านได้แจ้งวิธีส่งที่ปลอดภัยแล้ว</small>
     </div>
   </header>
 
   <details class="toc">
-    <summary>สารบัญ 19 หัวข้อ</summary>
+    <summary>สารบัญ</summary>
     <ol>
       <li><a href="#s1">ผู้ควบคุมข้อมูลส่วนบุคคล</a></li>
       <li><a href="#s2">บุคคลที่นโยบายนี้ครอบคลุม</a></li>
@@ -229,9 +292,7 @@
       <li><a href="#s14">วิธีติดต่อและใช้สิทธิ</a></li>
       <li><a href="#s15">เหตุละเมิดข้อมูลส่วนบุคคล</a></li>
       <li><a href="#s16">การเปลี่ยนแปลงนโยบาย</a></li>
-      <li><a href="#s17">ข้อความรับทราบสำหรับระบบ</a></li>
-      <li><a href="#s18">ความยินยอมรับข่าวสารการตลาด</a></li>
-      <li><a href="#s19">ความยินยอมใช้ภาพและเสียงเพื่อทำคอนเทนต์</a></li>
+      <li><a href="#s17">แบบฟอร์มความยินยอม (ข้อ 17–19)</a></li>
     </ol>
   </details>
 
@@ -415,33 +476,144 @@
   </section>
 
   <section id="s17">
-    <h2><span class="num">17</span> ข้อความรับทราบสำหรับระบบ</h2><div class="rule"></div>
-    <div class="form-box">
-      <p class="lbl">ข้อความที่ปรากฏในแบบฟอร์มของร้าน</p>
-      <div class="check"><span>☐</span><span>ข้าพเจ้าได้รับทราบและอ่านนโยบายคุ้มครองข้อมูลส่วนบุคคลของร้านเด็กกินเส้นแล้ว</span></div>
-    </div>
-    <div class="warn">การรับทราบนโยบายไม่เท่ากับการยินยอมให้นำภาพหรือเสียงไปเผยแพร่หรือจัดทำคอนเทนต์ การเผยแพร่ต้องขอความยินยอมแยกต่างหาก</div>
+    <h2><span class="num">17</span> แบบฟอร์มความยินยอม (ข้อ 17–19)</h2><div class="rule"></div>
+    <p>ติ๊กเฉพาะข้อที่คุณยินยอม ข้อที่ไม่ติ๊กถือว่าไม่ยินยอม แล้วกดส่งผ่าน LINE ข้อความจะถูกส่งจากบัญชี LINE ของคุณเองไปที่ร้าน และร้านเก็บไว้เป็นหลักฐานการให้ความยินยอม</p>
+
+    <form class="consent" id="consent" novalidate>
+      <div class="field">
+        <label class="lbl-t" for="f-name">ชื่อ–นามสกุล</label>
+        <input type="text" id="f-name" autocomplete="name">
+      </div>
+      <div class="field">
+        <label class="lbl-t" for="f-member">เลขสมาชิก <span class="opt-note">(ถ้ามี)</span></label>
+        <input type="text" id="f-member" autocomplete="off">
+      </div>
+
+      <label class="opt" for="c-ack">
+        <input type="checkbox" id="c-ack">
+        <span><b>ข้าพเจ้าได้รับทราบและอ่านนโยบายคุ้มครองข้อมูลส่วนบุคคลของร้านเด็กกินเส้นแล้ว<span class="req">จำเป็น</span></b>
+        <span class="sub">การรับทราบนโยบายไม่เท่ากับการยินยอมให้นำภาพหรือเสียงไปเผยแพร่หรือจัดทำคอนเทนต์</span></span>
+      </label>
+
+      <label class="opt" for="c-mkt">
+        <input type="checkbox" id="c-mkt">
+        <span><b>ยินยอมรับข่าวสาร โปรโมชั่น และสิทธิประโยชน์จากร้านเด็กกินเส้น</b>
+        <span class="sub">ไม่ติ๊กก็สมัครสมาชิก สะสมคะแนน ซื้อสินค้า และรับบริการได้ตามปกติ</span></span>
+      </label>
+
+      <label class="opt" for="c-media">
+        <input type="checkbox" id="c-media">
+        <span><b>ยินยอมให้ร้านบันทึกและใช้ภาพ วิดีโอ หรือเสียงของข้าพเจ้า เพื่อเผยแพร่และจัดทำคอนเทนต์ประชาสัมพันธ์ตามขอบเขตที่ร้านแจ้ง</b>
+        <span class="sub">แยกจากการสมัครสมาชิก การซื้อสินค้า การรับบริการ และสิทธิประโยชน์ทั้งหมด</span></span>
+      </label>
+
+      <div id="media-extra" class="extra" hidden>
+        <fieldset class="plats">
+          <legend>ช่องทางที่ยินยอมให้เผยแพร่</legend>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="plat" value="TikTok"> TikTok</label>
+            <label class="chip"><input type="checkbox" name="plat" value="Facebook"> Facebook</label>
+            <label class="chip"><input type="checkbox" name="plat" value="Instagram"> Instagram</label>
+            <label class="chip"><input type="checkbox" name="plat" value="LINE"> LINE</label>
+            <label class="chip"><input type="checkbox" name="plat" value="YouTube"> YouTube</label>
+          </div>
+          <button type="button" class="link-btn" id="all-plat">เลือกทุกช่องทาง</button>
+        </fieldset>
+        <label class="opt opt-sm" for="c-guard">
+          <input type="checkbox" id="c-guard">
+          <span><b>ฉันเป็นผู้ปกครอง และยินยอมแทนผู้เยาว์</b>
+          <span class="sub">ร้านจะไม่เผยแพร่ชื่อเต็ม ที่อยู่ โรงเรียน หรือข้อมูลที่ใช้ติดตามตัวเด็กได้</span></span>
+        </label>
+        <div class="field" id="guard-extra" hidden>
+          <label class="lbl-t" for="f-child">ชื่อผู้เยาว์</label>
+          <input type="text" id="f-child" autocomplete="off">
+        </div>
+      </div>
+
+      <p class="err" id="f-err" role="alert"></p>
+      <div class="send">
+        <button type="submit" class="btn-line">ส่งผ่าน LINE</button>
+      </div>
+
+      <div class="preview" id="preview" hidden>
+        <p class="lbl-t">ข้อความที่ส่งให้ร้าน</p>
+        <pre id="preview-text"></pre>
+        <div class="send">
+          <a class="btn-line" id="open-line" href="https://lin.ee/ZpccLss">เปิด LINE อีกครั้ง</a>
+          <button type="button" class="btn-ghost" id="copy">คัดลอกข้อความ</button>
+        </div>
+        <p class="hint">ถ้า LINE ไม่เปิดเอง กด "เปิด LINE อีกครั้ง" หรือคัดลอกข้อความไปส่งที่ LINE @728kuaub ต้องกดส่งในแชทเอง ข้อความจึงจะถือเป็นหลักฐานจากบัญชีของคุณ</p>
+      </div>
+    </form>
+
+    <p class="hint">เปลี่ยนใจภายหลัง? <a id="withdraw" href="https://lin.ee/ZpccLss">ขอถอนความยินยอมผ่าน LINE</a> ได้ตลอดเวลา ไม่กระทบการซื้อสินค้า คะแนนสมาชิก หรือของรางวัล การถอนไม่กระทบการใช้ข้อมูลที่ทำไปโดยชอบก่อนถอน</p>
   </section>
 
-  <section id="s18">
-    <h2><span class="num">18</span> ความยินยอมรับข่าวสารการตลาด</h2><div class="rule"></div>
-    <div class="form-box">
-      <p class="lbl">ข้อความที่ปรากฏในแบบฟอร์มของร้าน</p>
-      <div class="check"><span>☐</span><span>ยินยอมรับข่าวสาร โปรโมชั่น และสิทธิประโยชน์จากร้านเด็กกินเส้น</span></div>
-      <div class="check"><span>☐</span><span>ไม่ยินยอมรับข่าวสาร โปรโมชั่น และสิทธิประโยชน์</span></div>
-    </div>
-    <div class="note">การปฏิเสธหรือถอนความยินยอมด้านการตลาด จะไม่กระทบต่อการสมัครสมาชิก การสะสมคะแนน การซื้อสินค้า หรือการรับบริการ</div>
-  </section>
+  <script>
+  (function () {
+    var OA = "%40728kuaub";
+    var $ = function (id) { return document.getElementById(id); };
+    var media = $("c-media"), guard = $("c-guard");
+    function lineUrl(text) { return "https://line.me/R/oaMessage/" + OA + "/?" + encodeURIComponent(text); }
+    function ref() {
+      var d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
+      var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", a = new Uint32Array(4), r = "";
+      crypto.getRandomValues(a);
+      for (var i = 0; i < a.length; i++) r += chars[a[i] % chars.length];
+      return "C-" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "-" + r;
+    }
+    media.addEventListener("change", function () { $("media-extra").hidden = !media.checked; });
+    guard.addEventListener("change", function () { $("guard-extra").hidden = !guard.checked; });
+    $("all-plat").addEventListener("click", function () {
+      document.querySelectorAll('input[name="plat"]').forEach(function (c) { c.checked = true; });
+    });
 
-  <section id="s19">
-    <h2><span class="num">19</span> ความยินยอมใช้ภาพและเสียงเพื่อทำคอนเทนต์</h2><div class="rule"></div>
-    <div class="form-box">
-      <p class="lbl">ข้อความที่ปรากฏในแบบฟอร์มของร้าน</p>
-      <div class="check"><span>☐</span><span>ยินยอมให้ร้านบันทึกและใช้ภาพ วิดีโอ หรือเสียงของข้าพเจ้า เพื่อเผยแพร่และจัดทำคอนเทนต์ประชาสัมพันธ์ตามขอบเขตที่ร้านแจ้ง</span></div>
-      <div class="check"><span>☐</span><span>ไม่ยินยอม</span></div>
-    </div>
-    <div class="note">การให้ความยินยอมนี้แยกออกจากการสมัครสมาชิก การซื้อสินค้า การรับบริการ และการรับสิทธิประโยชน์ทั้งหมด</div>
-  </section>
+    $("consent").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var err = $("f-err"); err.textContent = "";
+      var name = $("f-name").value.trim(), member = $("f-member").value.trim();
+      var plats = Array.prototype.map.call(document.querySelectorAll('input[name="plat"]:checked'), function (c) { return c.value; });
+      var child = $("f-child").value.trim();
+      if (!name) { err.textContent = "กรอกชื่อ–นามสกุลก่อน เพื่อให้ร้านจับคู่กับข้อมูลของคุณได้"; $("f-name").focus(); return; }
+      if (!$("c-ack").checked) { err.textContent = "ติ๊กรับทราบนโยบายก่อนส่ง"; $("c-ack").focus(); return; }
+      if (media.checked && !plats.length) { err.textContent = "เลือกช่องทางที่ยินยอมอย่างน้อย 1 ช่องทาง"; return; }
+      if (media.checked && guard.checked && !child) { err.textContent = "กรอกชื่อผู้เยาว์ที่คุณยินยอมแทน"; $("f-child").focus(); return; }
+
+      var tick = function (b) { return b ? "[✓]" : "[ ]"; };
+      var lines = [
+        "แบบฟอร์มความยินยอม PDPA — ร้านเด็กกินเส้น",
+        "เลขอ้างอิง: " + ref(),
+        "ชื่อ: " + name,
+        "เลขสมาชิก: " + (member || "-"),
+        tick(true) + " รับทราบนโยบายคุ้มครองข้อมูลส่วนบุคคล ฉบับ 17 ก.ย. 2569",
+        tick($("c-mkt").checked) + " ยินยอมรับข่าวสารการตลาด",
+        tick(media.checked) + " ยินยอมใช้ภาพ/เสียงทำคอนเทนต์" + (media.checked ? ": " + plats.join(", ") : "")
+      ];
+      if (media.checked && guard.checked) lines.push("ผู้ปกครองยินยอมแทนผู้เยาว์: " + child);
+      lines.push("ส่งเมื่อ: " + new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" }));
+
+      var text = lines.join("\n");
+      $("preview-text").textContent = text;
+      $("open-line").href = lineUrl(text);
+      $("preview").hidden = false;
+      window.location.href = lineUrl(text);
+    });
+
+    $("copy").addEventListener("click", function () {
+      var b = $("copy");
+      navigator.clipboard.writeText($("preview-text").textContent)
+        .then(function () { b.textContent = "คัดลอกแล้ว"; })
+        .catch(function () { b.textContent = "กดค้างที่ข้อความเพื่อคัดลอก"; });
+    });
+
+    $("withdraw").href = lineUrl([
+      "ขอถอนความยินยอม PDPA — ร้านเด็กกินเส้น",
+      "ชื่อ: ",
+      "เลขสมาชิก: ",
+      "เรื่องที่ขอถอน: การตลาด / ภาพและเสียง (ลบข้อที่ไม่ต้องการ)"
+    ].join("\n"));
+  })();
+  </script>
 
   <footer>
     <p><strong>เอกสารอ้างอิง</strong><br>
