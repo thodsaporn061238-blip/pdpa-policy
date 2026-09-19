@@ -240,6 +240,13 @@
     border-radius: 10px; padding: 12px 14px; margin: 8px 0 0;
   }
   .hint { color: var(--ink-3); font-size: 13.5px; line-height: 1.65; margin: 12px 0 0; }
+  .btn-line:disabled { opacity: .6; cursor: progress; }
+  .done {
+    display: grid; gap: 4px; background: var(--note-bg); border-left: 3px solid var(--note);
+    border-radius: 0 12px 12px 0; padding: 18px 20px; margin: 4px 0 16px;
+  }
+  .done b { color: var(--note); font-size: 18px; }
+  .done span { font-size: 15px; }
   .hint a { color: var(--accent); }
 </style>
 <style>
@@ -532,8 +539,9 @@
 
       <p class="err" id="f-err" role="alert"></p>
       <div class="send">
-        <button type="submit" class="btn-line">ส่งผ่าน LINE</button>
+        <button type="submit" class="btn-line" id="submit-btn">ส่งผ่าน LINE</button>
       </div>
+      <p class="hint" id="send-mode">กดส่งแล้ว LINE จะเปิดพร้อมข้อความ ให้กดส่งในแชทร้านอีกครั้ง</p>
 
       <div class="preview" id="preview" hidden>
         <p class="lbl-t">ข้อความที่ส่งให้ร้าน</p>
@@ -546,6 +554,11 @@
       </div>
     </form>
 
+    <div class="done" id="done" role="status" hidden>
+      <b>ส่งแล้ว ✓</b>
+      <span>ร้านได้รับความยินยอมของคุณในแชทแล้ว ถอนความยินยอมได้ตลอดเวลาผ่าน LINE ของร้าน</span>
+    </div>
+
     <p class="hint">เปลี่ยนใจภายหลัง? <a id="withdraw" href="https://lin.ee/ZpccLss">ขอถอนความยินยอมผ่าน LINE</a> ได้ตลอดเวลา ไม่กระทบการซื้อสินค้า คะแนนสมาชิก หรือของรางวัล การถอนไม่กระทบการใช้ข้อมูลที่ทำไปโดยชอบก่อนถอน</p>
   </section>
 
@@ -554,6 +567,26 @@
     var OA = "%40728kuaub";
     var $ = function (id) { return document.getElementById(id); };
     var media = $("c-media"), guard = $("c-guard");
+
+    // LIFF: ส่งอัตโนมัติได้เฉพาะเมื่อเปิดหน้านี้จากในแชท LINE (เช่น ปุ่ม Rich menu ของ @728kuaub)
+    // เปิดจาก QR/เบราว์เซอร์ทั่วไป → ใช้วิธีเดิม (เปิด LINE พร้อมข้อความ ให้ลูกค้ากดส่งเอง)
+    var LIFF_ID = "";   // ใส่ LIFF ID จาก LINE Developers เช่น "2001234567-AbCdEfGh"
+    var liffChat = false;
+    if (LIFF_ID) {
+      var sdk = document.createElement("script");
+      sdk.src = "https://static.line-scdn.net/liff/edge/2/sdk.js";
+      sdk.onload = function () {
+        liff.init({ liffId: LIFF_ID }).then(function () {
+          if (!liff.isInClient()) return;
+          var ctx = liff.getContext();
+          if (ctx && ["utou", "group", "room", "square_chat"].indexOf(ctx.type) >= 0) {
+            liffChat = true;
+            $("send-mode").textContent = "กดส่งแล้ว ข้อความจะส่งจากบัญชี LINE ของคุณเข้าแชทนี้ทันที";
+          }
+        }).catch(function (e) { console.warn("LIFF init ไม่สำเร็จ ใช้วิธีเดิมแทน", e); });
+      };
+      document.head.appendChild(sdk);
+    }
     function lineUrl(text) { return "https://line.me/R/oaMessage/" + OA + "/?" + encodeURIComponent(text); }
     function ref() {
       var d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
@@ -595,8 +628,25 @@
       var text = lines.join("\n");
       $("preview-text").textContent = text;
       $("open-line").href = lineUrl(text);
-      $("preview").hidden = false;
-      window.location.href = lineUrl(text);
+
+      function fallback() {
+        $("preview").hidden = false;
+        window.location.href = lineUrl(text);
+      }
+      if (!liffChat) { fallback(); return; }
+
+      var btn = $("submit-btn");
+      btn.disabled = true; btn.textContent = "กำลังส่ง…";
+      liff.sendMessages([{ type: "text", text: text }]).then(function () {
+        $("consent").hidden = true;
+        $("done").hidden = false;
+        setTimeout(function () { liff.closeWindow(); }, 2500);
+      }).catch(function (e) {
+        console.warn("ส่งอัตโนมัติไม่สำเร็จ", e);
+        btn.disabled = false; btn.textContent = "ส่งผ่าน LINE";
+        $("f-err").textContent = "ส่งอัตโนมัติไม่สำเร็จ กรุณากดส่งข้อความในแชทเองแทน";
+        fallback();
+      });
     });
 
     $("copy").addEventListener("click", function () {
