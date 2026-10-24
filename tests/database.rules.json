@@ -1,0 +1,70 @@
+{
+  "rules": {
+    "companyBilling": {
+      ".read": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'",
+      ".write": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'",
+      "accessRequests": {
+        "$uid": {
+          ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || auth.uid == $uid)",
+          ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || auth.uid == $uid)"
+        }
+      },
+      "authorizedUsers": {
+        "$uid": {
+          ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || auth.uid == $uid)",
+          ".write": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'"
+        }
+      },
+      "presence": {
+        "$uid": {
+          ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || auth.uid == $uid)",
+          ".write": "auth != null && auth.uid == $uid"
+        }
+      },
+      "auditLogs": {
+        ".read": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'",
+        "$logId": {
+          ".write": "auth != null && !data.exists() && newData.child('actorUid').val() == auth.uid && newData.child('occurredAt').isString() && newData.child('action').isString()"
+        }
+      },
+      "companyProfile": {
+        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/companySettings').val() == true))"
+      },
+      "jobs": {
+        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true)))"
+      },
+      "customers": {
+        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/customers').val() == true))"
+      },
+      "sharedInvoices": {
+        "$invoiceId": {
+          ".read": true,
+          ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true)))"
+        }
+      },
+      "$other": {
+        ".read": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'",
+        ".write": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'"
+      }
+    },
+    "snpTransport": {
+      "jobs": {
+        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)"
+      },
+      "customers": {
+        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)"
+      },
+      "portal": {
+        "$code": {
+          ".read": "$code.length >= 12",
+          ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)"
+        }
+      }
+    }
+  }
+}
