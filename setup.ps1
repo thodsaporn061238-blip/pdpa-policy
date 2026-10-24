@@ -9,6 +9,7 @@ if (-not (Need git))  { Write-Host 'ไม่พบ git — ติดตั้�
 if (-not (Need node)) { Write-Host 'ไม่พบ Node.js — ติดตั้งรุ่น 20 ขึ้นไปจาก https://nodejs.org แล้วรันใหม่'; exit 1 }
 Write-Host "git:  $(git --version)"
 Write-Host "node: $(node --version)"
+if (-not (Need java)) { Write-Host 'ไม่พบ Java — ต้องใช้รัน Firebase emulator ตอนทดสอบ ติดตั้ง Java 11 ขึ้นไปจาก https://adoptium.net แล้วรันใหม่'; exit 1 }
 
 Write-Host '== ดึงโค้ดล่าสุดจาก GitHub =='
 git fetch origin main

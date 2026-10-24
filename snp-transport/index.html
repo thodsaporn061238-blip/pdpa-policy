@@ -218,7 +218,34 @@
     <p class="lede" id="pageLede">จองรถส่งของ เช็กค่าขนส่ง และติดตามสถานะงานได้ในหน้าเดียว</p>
   </header>
 
-  <nav class="tabs" role="tablist" aria-label="เมนูระบบขนส่ง" id="adminNav">
+  <p class="empty" id="loading">กำลังเชื่อมต่อระบบ…</p>
+
+  <!-- ---- เข้าสู่ระบบพนักงาน ---- -->
+  <section id="loginView" hidden>
+    <form class="card" id="loginForm">
+      <h2>เข้าสู่ระบบพนักงาน</h2>
+      <p class="muted" style="margin-top:-6px">ใช้บัญชีเดียวกับระบบวางบิล SNP</p>
+      <div class="grid" style="margin-bottom:16px">
+        <label class="f full">อีเมลหรือเบอร์โทร<input name="user" required autocomplete="username"></label>
+        <label class="f full">รหัสผ่าน<input name="pass" type="password" required autocomplete="current-password"></label>
+      </div>
+      <button class="btn" type="submit">เข้าสู่ระบบ</button>
+      <p class="muted" id="loginError" role="alert" style="color:var(--bad)"></p>
+    </form>
+  </section>
+
+  <div class="list-head muted" id="staffBar" style="margin-bottom:12px" hidden>
+    <span id="staffName"></span>
+    <button class="btn sm ghost" type="button" id="logoutBtn">ออกจากระบบ</button>
+  </div>
+
+  <div class="card" id="migrateCard" hidden>
+    <h2>พบข้อมูลเก่าในเครื่องนี้</h2>
+    <p id="migrateText"></p>
+    <button class="btn sm" type="button" id="migrateBtn">ย้ายขึ้นระบบออนไลน์</button>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="เมนูระบบขนส่ง" id="adminNav" hidden>
     <button role="tab" data-tab="book" aria-selected="true">จองขนส่ง</button>
     <button role="tab" data-tab="track" aria-selected="false">ค้นหา</button>
     <button role="tab" data-tab="jobs" aria-selected="false">รายการงาน</button>
@@ -227,7 +254,7 @@
   </nav>
 
   <!-- ---- จองขนส่ง ---- -->
-  <section id="tab-book" role="tabpanel">
+  <section id="tab-book" role="tabpanel" hidden>
     <form id="bookForm" class="card" novalidate>
       <h2>จองงานขนส่งใหม่</h2>
 
@@ -298,7 +325,7 @@
 
       <label class="consent">
         <input type="checkbox" name="consent" required>
-        <span>ยินยอมให้ SNP ใช้ชื่อ เบอร์โทร และที่อยู่ของผู้ส่งและผู้รับ เพื่อเข้ารับ จัดส่ง และติดต่อเรื่องงานขนส่งนี้เท่านั้น ตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (<a href="../">อ่านนโยบาย</a>)</span>
+        <span>ยินยอมให้ SNP ใช้ชื่อ เบอร์โทร และที่อยู่ของผู้ส่งและผู้รับ เพื่อเข้ารับ จัดส่ง และติดต่อเรื่องงานขนส่งนี้เท่านั้น โดยจัดเก็บในระบบออนไลน์ของ SNP ตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (<a href="../">อ่านนโยบาย</a>)</span>
       </label>
 
       <button class="btn" type="submit">ยืนยันการจอง</button>
@@ -385,7 +412,7 @@
     </div>
   </section>
 
-  <footer>© SNP Transport · ข้อมูลในหน้านี้เก็บไว้ในเบราว์เซอร์ของเครื่องนี้เท่านั้น</footer>
+  <footer>© SNP Transport · ข้อมูลเก็บในระบบออนไลน์ของ SNP (Firebase)</footer>
 </div>
 
 <dialog id="editDlg">
@@ -409,73 +436,313 @@
 
 <div class="toast" id="toast" role="status"></div>
 
-<script>
-(() => {
-  const VEHICLES = [
-    { id: 'bike',   name: 'มอเตอร์ไซค์', base: 60,  perKm: 8,  maxKg: 20 },
-    { id: 'pickup', name: 'กระบะ',       base: 350, perKm: 15, maxKg: 1000 },
-    { id: 'truck6', name: 'รถ 6 ล้อ',    base: 1500, perKm: 30, maxKg: 5000 },
-  ];
-  const FREE_KM = 5;
-  const STATUSES = [
-    { id: 'booked',    label: 'รับงานแล้ว',     tone: '' },
-    { id: 'picked',    label: 'เข้ารับของแล้ว',  tone: 'warn' },
-    { id: 'transit',   label: 'กำลังขนส่ง',     tone: 'warn' },
-    { id: 'delivered', label: 'ส่งสำเร็จ',      tone: 'ok' },
-  ];
-  const CANCELLED = { id: 'cancelled', label: 'ยกเลิก', tone: 'bad' };
-  // ข้อมูลที่เปิด/ปิดให้ลูกค้าเห็นได้ (เลขติดตามและสถานะแสดงเสมอ)
-  const FIELDS = [
-    ['timeline',   'ไทม์ไลน์สถานะ'],
-    ['pickup',     'วันเวลาเข้ารับ'],
-    ['vehicle',    'รถและทะเบียน'],
-    ['driver',     'คนขับ'],
-    ['containers', 'ตู้และเลขแท็ก'],
-    ['sender',     'ผู้ส่ง'],
-    ['receiver',   'ผู้รับ'],
-    ['price',      'ค่าส่งและ COD'],
-    ['note',       'หมายเหตุ'],
-  ];
-  const SHOW_ALL = Object.fromEntries(FIELDS.map(([k]) => [k, true]));
-  const ADMIN_SHOW = { ...SHOW_ALL, customer: true };
-  const STORE_KEY = 'snp-transport-jobs';
-  const CUSTOMER_KEY = 'snp-transport-customers';
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+import { getAuth, connectAuthEmulator, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+import { getDatabase, connectDatabaseEmulator, ref, onValue, set, update, remove, get } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js';
 
-  const $ = (s, el = document) => el.querySelector(s);
-  const baht = n => '฿' + Math.round(n).toLocaleString('th-TH');
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const fmtTime = iso => new Date(iso).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
-  const statusOf = id => STATUSES.find(s => s.id === id) || CANCELLED;
-  const vehicleName = id => (VEHICLES.find(v => v.id === id) || {}).name || id;
-  const norm = s => String(s ?? '').toUpperCase().replace(/\s+/g, '');
-  const parseTags = s => [...new Set(String(s).split(/[\s,]+/).map(t => t.trim().toUpperCase()).filter(Boolean))];
+// โปรเจกต์ Firebase เดียวกับระบบวางบิล SNP (snp-billing) — กฎความปลอดภัยอยู่ใน snp-billing/firebase-database-rules.json
+const firebaseApp = initializeApp({
+  apiKey: 'AIzaSyAUAtQE-6g0Rvzm-v0onxUVavGDgRVUZ0U',
+  authDomain: 'send-an-invoice-to-snp.firebaseapp.com',
+  databaseURL: 'https://send-an-invoice-to-snp-default-rtdb.asia-southeast1.firebasedatabase.app',
+  projectId: 'send-an-invoice-to-snp',
+  appId: '1:771234904894:web:ec73baf59100870afe8a6f',
+});
+const auth = getAuth(firebaseApp);
+const db = getDatabase(firebaseApp);
+if (window.SNP_EMULATOR) { // ใช้เฉพาะตอนทดสอบ (npm test)
+  connectAuthEmulator(auth, `http://127.0.0.1:${window.SNP_EMULATOR.auth}`, { disableWarnings: true });
+  connectDatabaseEmulator(db, '127.0.0.1', window.SNP_EMULATOR.db);
+}
+const ROOT = 'snpTransport';
+const OWNER_EMAIL = 'thodsaporn061238@gmail.com';
 
-  // ---- storage ----
-  const load = key => { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } };
-  let jobs = load(STORE_KEY);
-  let customers = load(CUSTOMER_KEY);
-  const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(jobs)); } catch {} };
-  const saveCustomers = () => { try { localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customers)); } catch {} };
-  const customerName = id => (customers.find(c => c.id === id) || {}).name;
+const VEHICLES = [
+  { id: 'bike',   name: 'มอเตอร์ไซค์', base: 60,  perKm: 8,  maxKg: 20 },
+  { id: 'pickup', name: 'กระบะ',       base: 350, perKm: 15, maxKg: 1000 },
+  { id: 'truck6', name: 'รถ 6 ล้อ',    base: 1500, perKm: 30, maxKg: 5000 },
+];
+const FREE_KM = 5;
+const STATUSES = [
+  { id: 'booked',    label: 'รับงานแล้ว',     tone: '' },
+  { id: 'picked',    label: 'เข้ารับของแล้ว',  tone: 'warn' },
+  { id: 'transit',   label: 'กำลังขนส่ง',     tone: 'warn' },
+  { id: 'delivered', label: 'ส่งสำเร็จ',      tone: 'ok' },
+];
+const CANCELLED = { id: 'cancelled', label: 'ยกเลิก', tone: 'bad' };
+// ข้อมูลที่เปิด/ปิดให้ลูกค้าเห็นได้ (เลขติดตามและสถานะแสดงเสมอ)
+const FIELDS = [
+  ['timeline',   'ไทม์ไลน์สถานะ'],
+  ['pickup',     'วันเวลาเข้ารับ'],
+  ['vehicle',    'รถและทะเบียน'],
+  ['driver',     'คนขับ'],
+  ['containers', 'ตู้และเลขแท็ก'],
+  ['sender',     'ผู้ส่ง'],
+  ['receiver',   'ผู้รับ'],
+  ['price',      'ค่าส่งและ COD'],
+  ['note',       'หมายเหตุ'],
+];
+const SHOW_ALL = Object.fromEntries(FIELDS.map(([k]) => [k, true]));
+const ADMIN_SHOW = { ...SHOW_ALL, customer: true };
+const LEGACY_JOBS = 'snp-transport-jobs';
+const LEGACY_CUSTOMERS = 'snp-transport-customers';
 
-  // ---- toast ----
-  let toastTimer;
-  const toast = msg => {
-    const t = $('#toast');
-    t.textContent = msg; t.classList.add('show');
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+const $ = (s, el = document) => el.querySelector(s);
+const baht = n => '฿' + Math.round(n).toLocaleString('th-TH');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtTime = iso => new Date(iso).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+const statusOf = id => STATUSES.find(s => s.id === id) || CANCELLED;
+const vehicleName = id => (VEHICLES.find(v => v.id === id) || {}).name || id;
+const norm = s => String(s ?? '').toUpperCase().replace(/\s+/g, '');
+const parseTags = s => [...new Set(String(s).split(/[\s,]+/).map(t => t.trim().toUpperCase()).filter(Boolean))];
+const clean = o => JSON.parse(JSON.stringify(o)); // Firebase ไม่รับค่า undefined
+// Firebase ไม่เก็บ array ว่าง จึงเติมค่าเริ่มต้นกลับตอนอ่าน
+const normJob = j => ({
+  ...j,
+  containers: (j.containers || []).map(c => ({ no: c.no || '', tags: c.tags || [] })),
+  history: j.history || [],
+});
+const byNewest = (a, b) => String(b.createdAt).localeCompare(String(a.createdAt));
+
+let jobs = [];
+let customers = [];
+const customerName = id => (customers.find(c => c.id === id) || {}).name;
+
+// ---- toast ----
+let toastTimer;
+const toast = msg => {
+  const t = $('#toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+};
+const fail = e => { console.warn(e); toast('บันทึกไม่สำเร็จ: ' + (e.code || e.message)); };
+
+// ---- ราคา ----
+const quote = ({ vehicle, km, kg, fragile, cod, codAmt }) => {
+  const v = VEHICLES.find(x => x.id === vehicle) || VEHICLES[0];
+  const extraKm = Math.max(0, km - FREE_KM);
+  let total = v.base + extraKm * v.perKm;
+  const parts = [`${v.name} ${baht(v.base)}`];
+  if (extraKm > 0) parts.push(`ระยะเกิน ${extraKm.toFixed(1)} กม. ${baht(extraKm * v.perKm)}`);
+  if (fragile) { total += 50; parts.push('ของแตกง่าย ฿50'); }
+  if (cod && codAmt > 0) { const fee = Math.max(20, codAmt * 0.02); total += fee; parts.push(`COD ${baht(fee)}`); }
+  return { total: Math.round(total), detail: parts.join(' + '), overweight: kg > v.maxKg, vehicle: v };
+};
+
+// ---- แสดงรายละเอียดงานตามสิทธิ์ที่ให้เห็น ----
+function highlight(text, q) {
+  const n = norm(q);
+  const i = n ? String(text).toUpperCase().indexOf(n) : -1;
+  if (i < 0) return esc(text);
+  return esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + n.length)) + '</mark>' + esc(text.slice(i + n.length));
+}
+const containersHtml = list => list.map(c => `
+  <div><b>${c.no ? esc(c.no) : 'ไม่ระบุเลขตู้'}</b><br>
+    ${c.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('') || '<span class="muted">ยังไม่มีเลขแท็ก</span>'}</div>`).join('');
+const jobDetail = (j, show = ADMIN_SHOW) => {
+  const rows = [];
+  if (show.customer && j.customerId) rows.push(['ลูกค้า', esc(customerName(j.customerId) || 'ลูกค้าที่ถูกลบแล้ว')]);
+  if (show.sender && j.sender) rows.push(['ผู้ส่ง', `${esc(j.sender.name)} · ${esc(j.sender.phone)}<br><span class="muted">${esc(j.sender.addr)}</span>`]);
+  if (show.receiver && j.receiver) rows.push(['ผู้รับ', `${esc(j.receiver.name)} · ${esc(j.receiver.phone)}<br><span class="muted">${esc(j.receiver.addr)}</span>`]);
+  if (show.vehicle) rows.push(['รถ', `${esc(vehicleName(j.vehicle))}${j.plate ? ` · ทะเบียน ${esc(j.plate)}` : ''} · ${j.km} กม. · ${j.kg} กก.${j.fragile ? ' · ของแตกง่าย' : ''}`]);
+  if (show.driver && j.driver) rows.push(['คนขับ', esc(j.driver)]);
+  if (show.containers && j.containers.length) rows.push(['ตู้/แท็ก', containersHtml(j.containers)]);
+  if (show.pickup) rows.push(['เข้ารับ', `${esc(j.date)} ${esc(j.slot)}`]);
+  if (show.price) rows.push(['ค่าส่ง', `${baht(j.price)}${j.cod ? ` · COD ${baht(j.cod)}` : ''}`]);
+  if (show.note && j.note) rows.push(['หมายเหตุ', esc(j.note)]);
+  return rows.length ? `<dl class="kv">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : '';
+};
+const timeline = j => {
+  const when = id => (j.history.find(h => h.status === id) || {}).at;
+  const steps = j.status === 'cancelled' ? j.history.map(h => statusOf(h.status)) : STATUSES;
+  return `<ol class="timeline">${steps.map(s => {
+    const at = when(s.id);
+    return `<li class="${at ? 'done' : ''}">${s.label}${at ? `<time>${fmtTime(at)}</time>` : ''}</li>`;
+  }).join('')}</ol>`;
+};
+const fullJob = (j, show) => {
+  const s = statusOf(j.status);
+  return `<div style="margin-top:18px">
+    <div class="list-head"><span class="tno">${esc(j.tno)}</span><span class="badge ${s.tone}">${s.label}</span></div>
+    ${show.timeline ? timeline(j) : ''}${jobDetail(j, show)}</div>`;
+};
+
+// ---- ค้นหาด้วยเลขแท็ก เลขตู้ ทะเบียนรถ หรือเลขติดตาม ----
+const search = (q, pool, show) => {
+  const n = norm(q);
+  if (!n) return [];
+  const results = [];
+  for (const j of pool) {
+    const hits = [];
+    if (norm(j.tno).includes(n)) hits.push({ kind: 'เลขติดตาม', value: j.tno });
+    if (show.vehicle && j.plate && norm(j.plate).includes(n)) hits.push({ kind: 'ทะเบียนรถ', value: j.plate });
+    if (show.containers) for (const c of j.containers) {
+      if (c.no && norm(c.no).includes(n)) hits.push({ kind: 'เลขตู้', value: c.no });
+      for (const t of c.tags) if (norm(t).includes(n)) hits.push({ kind: 'เลขแท็ก', value: t, container: c.no });
+    }
+    if (hits.length) results.push({ job: j, hits });
+  }
+  return results;
+};
+const renderSearch = (q, pool, show, out, isAdmin) => {
+  const n = norm(q);
+  if (!n) { out.innerHTML = ''; return; }
+  const exact = pool.find(j => j.tno === n);
+  if (exact) { out.innerHTML = fullJob(exact, show); return; }
+  const results = search(q, pool, show);
+  if (!results.length) { out.innerHTML = `<p class="empty">ไม่พบ ${esc(q)}</p>`; return; }
+  out.innerHTML = `<p class="muted" style="margin:14px 0 0">พบ ${results.length} งาน</p>` + results.map(({ job: j, hits }) => {
+    const s = statusOf(j.status);
+    const where = [
+      show.vehicle && j.plate ? `รถทะเบียน <b>${esc(j.plate)}</b> (${esc(vehicleName(j.vehicle))})` : '',
+      show.driver && j.driver ? `คนขับ ${esc(j.driver)}` : '',
+    ].filter(Boolean).join(' · ');
+    return `<div class="list-item">
+      <div class="list-head"><span class="tno">${esc(j.tno)}</span><span class="badge ${s.tone}">${s.label}</span></div>
+      ${hits.map(h => `<p class="hit">${h.kind} <b>${highlight(h.value, q)}</b>${h.container ? ` · อยู่ในตู้ <b>${esc(h.container)}</b>` : ''}</p>`).join('')}
+      ${where ? `<p class="hit muted">${where}</p>` : ''}
+      ${isAdmin
+        ? `<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-open="${esc(j.tno)}">ดูรายละเอียด</button></div>`
+        : `<details><summary>ดูรายละเอียด</summary>${show.timeline ? timeline(j) : ''}${jobDetail(j, show)}</details>`}
+    </div>`;
+  }).join('');
+};
+
+// ---- หน้าลูกค้า: ?customer=รหัส (อ่านจาก portal ที่พนักงานเผยแพร่ไว้ ไม่ต้องล็อกอิน) ----
+const customerCode = new URLSearchParams(location.search).get('customer');
+if (customerCode !== null) startCustomerView(customerCode.trim().toUpperCase());
+else startStaffApp();
+
+function startCustomerView(code) {
+  const invalid = () => {
+    $('#customerView').hidden = true;
+    $('#pageTitle').textContent = 'ลิงก์นี้ใช้ไม่ได้';
+    $('#pageLede').textContent = 'ลิงก์อาจถูกปิดหรือเปลี่ยนแล้ว กรุณาติดต่อ SNP เพื่อขอลิงก์ใหม่';
   };
+  if (code.length < 12) { $('#loading').hidden = true; invalid(); return; }
+  let pool = [], show = {};
+  const doSearch = () => renderSearch($('#custSearch').value, pool, show, $('#custResult'), false);
+  $('#custSearchForm').addEventListener('submit', e => { e.preventDefault(); doSearch(); });
+  onValue(ref(db, `${ROOT}/portal/${code}`), snap => {
+    $('#loading').hidden = true;
+    const p = snap.val();
+    if (!p) { invalid(); return; }
+    show = p.show || {};
+    pool = Object.values(p.jobs || {}).map(normJob).sort(byNewest);
+    $('#pageTitle').textContent = 'งานขนส่งของ ' + p.name;
+    $('#pageLede').textContent = 'ดูสถานะงานและค้นหาสินค้าของคุณ สถานะอัปเดตอัตโนมัติ';
+    const by = ['เลขติดตาม', show.containers && 'เลขแท็ก', show.containers && 'เลขตู้', show.vehicle && 'ทะเบียนรถ'].filter(Boolean);
+    $('#custSearch').placeholder = 'ค้นด้วย' + by.join(' ');
+    $('#customerView').hidden = false;
+    $('#custJobs').innerHTML = pool.length ? pool.map(j => {
+      const s = statusOf(j.status);
+      return `<div class="list-item">
+        <div class="list-head"><span class="tno">${esc(j.tno)}</span><span class="badge ${s.tone}">${s.label}</span></div>
+        ${show.pickup ? `<div class="muted">เข้ารับ ${esc(j.date)} ${esc(j.slot)}</div>` : ''}
+        <details><summary>ดูรายละเอียด</summary>${show.timeline ? timeline(j) : ''}${jobDetail(j, show)}</details>
+      </div>`;
+    }).join('') : `<p class="empty">ยังไม่มีงาน</p>`;
+    if ($('#custSearch').value) doSearch();
+  }, () => { $('#loading').hidden = true; invalid(); });
+}
+
+function startStaffApp() {
+  // ---- เข้าสู่ระบบ ----
+  const toEmail = v => {
+    v = v.trim();
+    if (v.includes('@')) return v.toLowerCase();
+    let digits = v.replace(/\D/g, '');
+    if (digits.startsWith('66')) digits = '0' + digits.slice(2);
+    return `${digits}@phone.snp.local`; // รูปแบบเดียวกับบัญชีพนักงานในระบบวางบิล
+  };
+  $('#loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.target;
+    $('#loginError').textContent = '';
+    try { await signInWithEmailAndPassword(auth, toEmail(f.user.value), f.pass.value); }
+    catch { $('#loginError').textContent = 'อีเมล เบอร์โทร หรือรหัสผ่านไม่ถูกต้อง'; }
+  });
+  $('#logoutBtn').addEventListener('click', () => signOut(auth));
+
+  let unsub = [];
+  const setSignedIn = on => {
+    $('#loginView').hidden = on;
+    $('#adminNav').hidden = !on;
+    $('#staffBar').hidden = !on;
+    if (!on) {
+      document.querySelectorAll('[role=tabpanel]').forEach(p => p.hidden = true);
+      $('#migrateCard').hidden = true;
+    }
+  };
+  onAuthStateChanged(auth, user => {
+    $('#loading').hidden = true;
+    unsub.forEach(u => u()); unsub = [];
+    if (!user) { setSignedIn(false); return; }
+    $('#staffName').textContent = 'เข้าสู่ระบบ: ' + user.email.replace('@phone.snp.local', '');
+    const denied = () => {
+      setSignedIn(false);
+      $('#loginView').hidden = false;
+      $('#loginError').textContent = 'บัญชีนี้ยังไม่มีสิทธิ์ใช้ระบบขนส่ง ให้เจ้าของระบบเปิดสิทธิ์ในระบบวางบิลก่อน';
+      signOut(auth);
+    };
+    let first = true;
+    unsub.push(onValue(ref(db, `${ROOT}/customers`), snap => {
+      customers = Object.values(snap.val() || {});
+      fillCustomerSelects(); renderCustomers();
+    }, denied));
+    unsub.push(onValue(ref(db, `${ROOT}/jobs`), snap => {
+      jobs = Object.values(snap.val() || {}).map(normJob).sort(byNewest);
+      if (first) { first = false; setSignedIn(true); showTab(currentTab); checkLegacy(); }
+      renderJobs(); renderCustomers();
+      if ($('#trackInput').value) renderTrack();
+    }, denied));
+  });
 
   // ---- tabs ----
+  let currentTab = 'book';
   const showTab = name => {
+    currentTab = name;
     document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === name));
     document.querySelectorAll('[role=tabpanel]').forEach(p => p.hidden = p.id !== 'tab-' + name);
-    if (name === 'jobs') renderJobs();
-    if (name === 'customers') renderCustomers();
   };
   document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
 
-  // ---- ตัวกรอกตู้และเลขแท็ก (ใช้ทั้งฟอร์มจองและหน้าต่างแก้ไข) ----
+  // ---- บันทึกขึ้น Firebase และเผยแพร่หน้าลูกค้า ----
+  // portal/{รหัส} เก็บเฉพาะข้อมูลที่เปิดให้ลูกค้ารายนั้นเห็น ลูกค้าอ่านได้โดยไม่เห็นข้อมูลอื่น
+  const portalJob = (j, show) => {
+    const p = { tno: j.tno, status: j.status, createdAt: j.createdAt };
+    if (show.timeline) p.history = j.history;
+    if (show.pickup) { p.date = j.date; p.slot = j.slot; }
+    if (show.vehicle) Object.assign(p, { vehicle: j.vehicle, plate: j.plate, km: j.km, kg: j.kg, fragile: j.fragile });
+    if (show.driver) p.driver = j.driver;
+    if (show.containers) p.containers = j.containers;
+    if (show.sender) p.sender = j.sender;
+    if (show.receiver) p.receiver = j.receiver;
+    if (show.price) { p.price = j.price; p.cod = j.cod; }
+    if (show.note) p.note = j.note;
+    return p;
+  };
+  const publishPortal = async (c, jobList = jobs) => {
+    if (!c) return;
+    const path = `${ROOT}/portal/${c.code}`;
+    if (!c.enabled) return remove(ref(db, path));
+    const mine = Object.fromEntries(jobList.filter(j => j.customerId === c.id).map(j => [j.tno, portalJob(j, c.show)]));
+    return set(ref(db, path), clean({ name: c.name, show: c.show, jobs: mine }));
+  };
+  const publishFor = (ids, jobList) => Promise.all([...new Set(ids)].filter(Boolean)
+    .map(id => publishPortal(customers.find(c => c.id === id), jobList)));
+  const saveJob = async (job, prevCustomerId) => {
+    await set(ref(db, `${ROOT}/jobs/${job.tno}`), clean(job));
+    const list = [job, ...jobs.filter(j => j.tno !== job.tno)];
+    await publishFor([job.customerId, prevCustomerId], list);
+  };
+  const saveCustomer = async c => {
+    await set(ref(db, `${ROOT}/customers/${c.id}`), clean(c));
+    await publishPortal(c);
+  };
+
+  // ---- ตัวกรอกตู้และเลขแท็ก ----
   const containerRow = (c = { no: '', tags: [] }) => {
     const div = document.createElement('div');
     div.className = 'crow';
@@ -501,29 +768,16 @@
     const rm = e.target.closest('[data-remove-container]');
     if (rm) rm.closest('.crow').remove();
   });
-
-  const fillCustomerSelects = () => {
+  function fillCustomerSelects() {
     document.querySelectorAll('[data-customer-select]').forEach(sel => {
       const cur = sel.value;
       sel.innerHTML = `<option value="">ลูกค้าทั่วไป (ไม่ผูกลิงก์ลูกค้า)</option>` +
         customers.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
       sel.value = customers.some(c => c.id === cur) ? cur : '';
     });
-  };
+  }
 
-  // ---- pricing ----
-  const quote = ({ vehicle, km, kg, fragile, cod, codAmt }) => {
-    const v = VEHICLES.find(x => x.id === vehicle) || VEHICLES[0];
-    const extraKm = Math.max(0, km - FREE_KM);
-    let total = v.base + extraKm * v.perKm;
-    const parts = [`${v.name} ${baht(v.base)}`];
-    if (extraKm > 0) parts.push(`ระยะเกิน ${extraKm.toFixed(1)} กม. ${baht(extraKm * v.perKm)}`);
-    if (fragile) { total += 50; parts.push('ของแตกง่าย ฿50'); }
-    if (cod && codAmt > 0) { const fee = Math.max(20, codAmt * 0.02); total += fee; parts.push(`COD ${baht(fee)}`); }
-    return { total: Math.round(total), detail: parts.join(' + '), overweight: kg > v.maxKg, vehicle: v };
-  };
-
-  // ---- booking form ----
+  // ---- ฟอร์มจอง ----
   const form = $('#bookForm');
   $('#vehicleOpts').innerHTML = VEHICLES.map((v, i) => `
     <label class="vehicle"><input type="radio" name="vehicle" value="${v.id}" ${i === 0 ? 'checked' : ''}>
@@ -555,14 +809,17 @@
   form.addEventListener('input', updateQuote);
   updateQuote();
 
-  const newTrackingNo = () => {
+  const newTrackingNo = async () => {
     const d = new Date();
     const ymd = String(d.getFullYear() % 100).padStart(2, '0') + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
-    const sameDay = jobs.filter(j => j.tno.startsWith('SNP' + ymd)).length;
-    return 'SNP' + ymd + String(sameDay + 1).padStart(4, '0');
+    let n = jobs.filter(j => j.tno.startsWith('SNP' + ymd)).length + 1;
+    let tno;
+    // กันเลขซ้ำเมื่อพนักงานหลายคนจองพร้อมกัน
+    do { tno = 'SNP' + ymd + String(n++).padStart(4, '0'); } while ((await get(ref(db, `${ROOT}/jobs/${tno}`))).exists());
+    return tno;
   };
 
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     const err = $('#formError');
     err.textContent = '';
@@ -577,28 +834,32 @@
     if (q.overweight) { err.textContent = `น้ำหนักเกินที่${q.vehicle.name}รับได้ (${q.vehicle.maxKg} กก.)`; return; }
     if (f.cod && !(f.codAmt > 0)) { err.textContent = 'กรุณากรอกยอดเก็บเงินปลายทาง'; form.codAmt.focus(); return; }
 
-    const now = new Date().toISOString();
-    const job = {
-      tno: newTrackingNo(),
-      createdAt: now,
-      customerId: form.customerId.value,
-      sender: { name: form.sName.value.trim(), phone: form.sPhone.value.trim(), addr: form.sAddr.value.trim() },
-      receiver: { name: form.rName.value.trim(), phone: form.rPhone.value.trim(), addr: form.rAddr.value.trim() },
-      vehicle: f.vehicle, km: f.km, kg: f.kg, fragile: f.fragile,
-      plate: form.plate.value.trim(), driver: form.driver.value.trim(),
-      containers: readContainers(form),
-      cod: f.cod ? f.codAmt : 0,
-      date: form.date.value, slot: form.slot.value, note: form.note.value.trim(),
-      price: q.total, consentAt: now,
-      status: 'booked',
-      history: [{ status: 'booked', at: now }],
-    };
-    jobs.unshift(job);
-    save();
-    form.hidden = true;
-    $('#doneTno').textContent = job.tno;
-    $('#bookDone').hidden = false;
-    toast('จองสำเร็จ ' + job.tno);
+    const btn = form.querySelector('button[type=submit]');
+    btn.disabled = true;
+    try {
+      const now = new Date().toISOString();
+      const job = {
+        tno: await newTrackingNo(),
+        createdAt: now,
+        customerId: form.customerId.value,
+        sender: { name: form.sName.value.trim(), phone: form.sPhone.value.trim(), addr: form.sAddr.value.trim() },
+        receiver: { name: form.rName.value.trim(), phone: form.rPhone.value.trim(), addr: form.rAddr.value.trim() },
+        vehicle: f.vehicle, km: f.km, kg: f.kg, fragile: f.fragile,
+        plate: form.plate.value.trim(), driver: form.driver.value.trim(),
+        containers: readContainers(form),
+        cod: f.cod ? f.codAmt : 0,
+        date: form.date.value, slot: form.slot.value, note: form.note.value.trim(),
+        price: q.total, consentAt: now,
+        status: 'booked',
+        history: [{ status: 'booked', at: now }],
+      };
+      await saveJob(job);
+      form.hidden = true;
+      $('#doneTno').textContent = job.tno;
+      $('#bookDone').hidden = false;
+      toast('จองสำเร็จ ' + job.tno);
+    } catch (e) { fail(e); err.textContent = 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง'; }
+    finally { btn.disabled = false; }
   });
 
   $('#copyTno').addEventListener('click', async () => {
@@ -611,85 +872,7 @@
     form.hidden = false; $('#bookDone').hidden = true;
   });
 
-  // ---- แสดงรายละเอียดงานตามสิทธิ์ที่ให้เห็น ----
-  const containersHtml = (list, q = '') => list.map(c => `
-    <div><b>${c.no ? highlight(c.no, q) : 'ไม่ระบุเลขตู้'}</b><br>
-      ${c.tags.map(t => `<span class="tag">${highlight(t, q)}</span>`).join('') || '<span class="muted">ยังไม่มีเลขแท็ก</span>'}</div>`).join('');
-  const jobDetail = (j, show = ADMIN_SHOW) => {
-    const rows = [];
-    if (show.customer && j.customerId) rows.push(['ลูกค้า', esc(customerName(j.customerId) || 'ลูกค้าที่ถูกลบแล้ว')]);
-    if (show.sender) rows.push(['ผู้ส่ง', `${esc(j.sender.name)} · ${esc(j.sender.phone)}<br><span class="muted">${esc(j.sender.addr)}</span>`]);
-    if (show.receiver) rows.push(['ผู้รับ', `${esc(j.receiver.name)} · ${esc(j.receiver.phone)}<br><span class="muted">${esc(j.receiver.addr)}</span>`]);
-    if (show.vehicle) rows.push(['รถ', `${esc(vehicleName(j.vehicle))}${j.plate ? ` · ทะเบียน ${esc(j.plate)}` : ''} · ${j.km} กม. · ${j.kg} กก.${j.fragile ? ' · ของแตกง่าย' : ''}`]);
-    if (show.driver && j.driver) rows.push(['คนขับ', esc(j.driver)]);
-    if (show.containers && j.containers?.length) rows.push(['ตู้/แท็ก', containersHtml(j.containers)]);
-    if (show.pickup) rows.push(['เข้ารับ', `${esc(j.date)} ${esc(j.slot)}`]);
-    if (show.price) rows.push(['ค่าส่ง', `${baht(j.price)}${j.cod ? ` · COD ${baht(j.cod)}` : ''}`]);
-    if (show.note && j.note) rows.push(['หมายเหตุ', esc(j.note)]);
-    return rows.length ? `<dl class="kv">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : '';
-  };
-  const timeline = j => {
-    const when = id => (j.history.find(h => h.status === id) || {}).at;
-    const steps = j.status === 'cancelled' ? j.history.map(h => statusOf(h.status)) : STATUSES;
-    return `<ol class="timeline">${steps.map(s => {
-      const at = when(s.id);
-      return `<li class="${at ? 'done' : ''}">${s.label}${at ? `<time>${fmtTime(at)}</time>` : ''}</li>`;
-    }).join('')}</ol>`;
-  };
-  const fullJob = (j, show) => {
-    const s = statusOf(j.status);
-    return `<div style="margin-top:18px">
-      <div class="list-head"><span class="tno">${esc(j.tno)}</span><span class="badge ${s.tone}">${s.label}</span></div>
-      ${show.timeline ? timeline(j) : ''}${jobDetail(j, show)}</div>`;
-  };
-
-  // ---- ค้นหาด้วยเลขแท็ก เลขตู้ ทะเบียนรถ หรือเลขติดตาม ----
-  function highlight(text, q) {
-    const n = norm(q);
-    const i = n ? String(text).toUpperCase().indexOf(n) : -1;
-    if (i < 0) return esc(text);
-    return esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + n.length)) + '</mark>' + esc(text.slice(i + n.length));
-  }
-  const search = (q, pool, show) => {
-    const n = norm(q);
-    if (!n) return [];
-    const results = [];
-    for (const j of pool) {
-      const hits = [];
-      if (norm(j.tno).includes(n)) hits.push({ kind: 'เลขติดตาม', value: j.tno });
-      if (show.vehicle && j.plate && norm(j.plate).includes(n)) hits.push({ kind: 'ทะเบียนรถ', value: j.plate });
-      if (show.containers) for (const c of j.containers || []) {
-        if (c.no && norm(c.no).includes(n)) hits.push({ kind: 'เลขตู้', value: c.no });
-        for (const t of c.tags) if (norm(t).includes(n)) hits.push({ kind: 'เลขแท็ก', value: t, container: c.no });
-      }
-      if (hits.length) results.push({ job: j, hits });
-    }
-    return results;
-  };
-  const renderSearch = (q, pool, show, out, isAdmin) => {
-    const n = norm(q);
-    if (!n) { out.innerHTML = ''; return; }
-    const exact = pool.find(j => j.tno === n);
-    if (exact) { out.innerHTML = fullJob(exact, show); return; }
-    const results = search(q, pool, show);
-    if (!results.length) { out.innerHTML = `<p class="empty">ไม่พบ ${esc(q)}</p>`; return; }
-    out.innerHTML = `<p class="muted" style="margin:14px 0 0">พบ ${results.length} งาน</p>` + results.map(({ job: j, hits }) => {
-      const s = statusOf(j.status);
-      const where = [
-        show.vehicle && j.plate ? `รถทะเบียน <b>${esc(j.plate)}</b> (${esc(vehicleName(j.vehicle))})` : '',
-        show.driver && j.driver ? `คนขับ ${esc(j.driver)}` : '',
-      ].filter(Boolean).join(' · ');
-      return `<div class="list-item">
-        <div class="list-head"><span class="tno">${esc(j.tno)}</span><span class="badge ${s.tone}">${s.label}</span></div>
-        ${hits.map(h => `<p class="hit">${h.kind} <b>${highlight(h.value, q)}</b>${h.container ? ` · อยู่ในตู้ <b>${esc(h.container)}</b>` : ''}</p>`).join('')}
-        ${where ? `<p class="hit muted">${where}</p>` : ''}
-        ${isAdmin
-          ? `<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-open="${esc(j.tno)}">ดูรายละเอียด</button></div>`
-          : `<details><summary>ดูรายละเอียด</summary>${show.timeline ? timeline(j) : ''}${jobDetail(j, show)}</details>`}
-      </div>`;
-    }).join('');
-  };
-
+  // ---- ค้นหา ----
   const renderTrack = () => renderSearch($('#trackInput').value, jobs, ADMIN_SHOW, $('#trackResult'), true);
   $('#trackForm').addEventListener('submit', e => { e.preventDefault(); renderTrack(); });
   $('#trackResult').addEventListener('click', e => {
@@ -697,7 +880,7 @@
     if (b) { $('#trackInput').value = b.dataset.open; renderTrack(); }
   });
 
-  // ---- job list ----
+  // ---- รายการงาน ----
   const filter = $('#filterStatus');
   filter.innerHTML = `<option value="">ทุกสถานะ</option>` +
     [...STATUSES, CANCELLED].map(s => `<option value="${s.id}">${s.label}</option>`).join('');
@@ -706,13 +889,11 @@
   const setStatus = (tno, status) => {
     const j = jobs.find(x => x.tno === tno);
     if (!j) return;
-    j.status = status;
-    j.history.push({ status, at: new Date().toISOString() });
-    save(); renderJobs();
-    toast(`${tno}: ${statusOf(status).label}`);
+    const next = { ...j, status, history: [...j.history, { status, at: new Date().toISOString() }] };
+    saveJob(next).then(() => toast(`${tno}: ${statusOf(status).label}`), fail);
   };
 
-  const renderJobs = () => {
+  function renderJobs() {
     const list = filter.value ? jobs.filter(j => j.status === filter.value) : jobs;
     const active = jobs.filter(j => !['delivered', 'cancelled'].includes(j.status)).length;
     const revenue = jobs.filter(j => j.status === 'delivered').reduce((a, j) => a + j.price, 0);
@@ -724,11 +905,11 @@
       const idx = STATUSES.findIndex(x => x.id === j.status);
       const next = idx >= 0 && idx < STATUSES.length - 1 ? STATUSES[idx + 1] : null;
       const canCancel = j.status === 'booked' || j.status === 'picked';
-      const tagCount = (j.containers || []).reduce((a, c) => a + c.tags.length, 0);
+      const tagCount = j.containers.reduce((a, c) => a + c.tags.length, 0);
       const extra = [
         j.customerId ? esc(customerName(j.customerId) || 'ลูกค้าที่ถูกลบแล้ว') : '',
         j.plate ? `ทะเบียน ${esc(j.plate)}` : 'ยังไม่ระบุรถ',
-        j.containers?.length ? `${j.containers.length} ตู้ · ${tagCount} แท็ก` : '',
+        j.containers.length ? `${j.containers.length} ตู้ · ${tagCount} แท็ก` : '',
       ].filter(Boolean).join(' · ');
       return `<div class="list-item">
         <div class="list-head"><span class="tno">${esc(j.tno)}</span><span class="badge ${s.tone}">${s.label}</span></div>
@@ -743,7 +924,7 @@
         </div>
       </div>`;
     }).join('');
-  };
+  }
 
   // ---- หน้าต่างแก้ไขรถ ตู้ และเลขแท็ก ----
   const dlg = $('#editDlg');
@@ -757,19 +938,21 @@
     editForm.customerId.value = customers.some(c => c.id === j.customerId) ? j.customerId : '';
     editForm.plate.value = j.plate || '';
     editForm.driver.value = j.driver || '';
-    setContainers(editForm, j.containers || []);
+    setContainers(editForm, j.containers);
     dlg.showModal();
   };
   dlg.addEventListener('close', () => {
     if (dlg.returnValue !== 'save') return;
     const j = jobs.find(x => x.tno === editForm.dataset.tno);
     if (!j) return;
-    j.customerId = editForm.customerId.value;
-    j.plate = editForm.plate.value.trim();
-    j.driver = editForm.driver.value.trim();
-    j.containers = readContainers(editForm);
-    save(); renderJobs();
-    toast(`บันทึก ${j.tno} แล้ว`);
+    const next = {
+      ...j,
+      customerId: editForm.customerId.value,
+      plate: editForm.plate.value.trim(),
+      driver: editForm.driver.value.trim(),
+      containers: readContainers(editForm),
+    };
+    saveJob(next, j.customerId).then(() => toast(`บันทึก ${j.tno} แล้ว`), fail);
   });
 
   $('#jobList').addEventListener('click', e => {
@@ -781,7 +964,10 @@
     else if (act === 'edit') openEdit(tno);
     else if (act === 'view') { $('#trackInput').value = tno; showTab('track'); renderTrack(); }
     else if (act === 'delete' && confirm(`ลบข้อมูลงาน ${tno} รวมชื่อ เบอร์โทร และที่อยู่ออกถาวร?`)) {
-      jobs = jobs.filter(j => j.tno !== tno); save(); renderJobs(); toast('ลบข้อมูลแล้ว');
+      const j = jobs.find(x => x.tno === tno);
+      remove(ref(db, `${ROOT}/jobs/${tno}`))
+        .then(() => publishFor([j.customerId], jobs.filter(x => x.tno !== tno)))
+        .then(() => toast('ลบข้อมูลแล้ว'), fail);
     }
   });
 
@@ -793,7 +979,7 @@
       j.sender.name, j.sender.phone, j.sender.addr,
       j.receiver.name, j.receiver.phone, j.receiver.addr,
       vehicleName(j.vehicle), j.plate, j.driver,
-      (j.containers || []).map(c => `${c.no || '-'}: ${c.tags.join(' ')}`).join(' | '),
+      j.containers.map(c => `${c.no || '-'}: ${c.tags.join(' ')}`).join(' | '),
       j.km, j.kg, j.date, j.slot, j.price, j.cod, j.note,
     ].map(q).join(','));
     const blob = new Blob(['﻿' + [cols.map(q).join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
@@ -804,10 +990,10 @@
     URL.revokeObjectURL(a.href);
   });
 
-  // ---- ตั้งค่าลูกค้า ----
+  // ---- ลูกค้าและสิทธิ์การมองเห็น ----
   const newCode = () => {
     const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    const bytes = crypto.getRandomValues(new Uint8Array(8));
+    const bytes = crypto.getRandomValues(new Uint8Array(12));
     return [...bytes].map(b => abc[b % abc.length]).join('');
   };
   const customerLink = c => {
@@ -816,7 +1002,7 @@
     u.hash = '';
     return u.href;
   };
-  const renderCustomers = () => {
+  function renderCustomers() {
     const box = $('#custList');
     if (!customers.length) { box.innerHTML = `<p class="empty">ยังไม่มีลูกค้า</p>`; return; }
     box.innerHTML = customers.map(c => {
@@ -827,7 +1013,7 @@
         <label class="switch" style="margin-top:8px"><input type="checkbox" data-cfg="enabled" ${c.enabled ? 'checked' : ''}> ให้ลูกค้าเปิดลิงก์นี้ได้</label>
         <div class="muted" style="margin-top:8px">ข้อมูลที่ให้ลูกค้าเห็น (เลขติดตามและสถานะแสดงเสมอ)</div>
         <div class="toggles">${FIELDS.map(([k, label]) =>
-          `<label><input type="checkbox" data-show="${k}" ${c.show[k] ? 'checked' : ''}> ${label}</label>`).join('')}</div>
+          `<label><input type="checkbox" data-show="${k}" ${c.show?.[k] ? 'checked' : ''}> ${label}</label>`).join('')}</div>
         <div class="row">
           <a class="btn sm" href="${esc(customerLink(c))}" target="_blank" rel="noopener">เปิดหน้าลูกค้า</a>
           <button class="btn sm ghost" type="button" data-cact="copy">คัดลอกลิงก์</button>
@@ -836,22 +1022,21 @@
         </div>
       </div>`;
     }).join('');
-  };
+  }
   $('#custForm').addEventListener('submit', e => {
     e.preventDefault();
     const name = e.target.cname.value.trim();
     if (!name) return;
-    customers.push({ id: 'c' + Date.now().toString(36), name, code: newCode(), enabled: true, show: { ...SHOW_ALL } });
-    saveCustomers(); fillCustomerSelects(); renderCustomers();
-    e.target.reset();
-    toast('เพิ่มลูกค้าแล้ว');
+    const c = { id: 'c' + Date.now().toString(36), name, code: newCode(), enabled: true, show: { ...SHOW_ALL } };
+    saveCustomer(c).then(() => { e.target.reset(); toast('เพิ่มลูกค้าแล้ว'); }, fail);
   });
   $('#custList').addEventListener('change', e => {
     const c = customers.find(x => x.id === e.target.closest('[data-cid]')?.dataset.cid);
     if (!c) return;
-    if (e.target.dataset.cfg === 'enabled') c.enabled = e.target.checked;
-    if (e.target.dataset.show) c.show[e.target.dataset.show] = e.target.checked;
-    saveCustomers(); renderCustomers();
+    const next = { ...c, show: { ...SHOW_ALL, ...c.show } };
+    if (e.target.dataset.cfg === 'enabled') next.enabled = e.target.checked;
+    if (e.target.dataset.show) next.show[e.target.dataset.show] = e.target.checked;
+    saveCustomer(next).catch(fail);
   });
   $('#custList').addEventListener('click', async e => {
     const b = e.target.closest('[data-cact]');
@@ -861,44 +1046,42 @@
       try { await navigator.clipboard.writeText(customerLink(c)); toast('คัดลอกลิงก์แล้ว'); }
       catch { toast('คัดลอกไม่สำเร็จ'); }
     } else if (b.dataset.cact === 'newcode' && confirm(`เปลี่ยนรหัสลิงก์ของ ${c.name}? ลิงก์เดิมจะใช้ไม่ได้`)) {
-      c.code = newCode(); saveCustomers(); renderCustomers(); toast('เปลี่ยนรหัสแล้ว');
+      remove(ref(db, `${ROOT}/portal/${c.code}`))
+        .then(() => saveCustomer({ ...c, code: newCode() }))
+        .then(() => toast('เปลี่ยนรหัสแล้ว'), fail);
     } else if (b.dataset.cact === 'delete' && confirm(`ลบลูกค้า ${c.name}? งานเดิมยังอยู่ แต่ลิงก์ลูกค้าจะใช้ไม่ได้`)) {
-      customers = customers.filter(x => x !== c); saveCustomers(); fillCustomerSelects(); renderCustomers();
+      Promise.all([remove(ref(db, `${ROOT}/portal/${c.code}`)), remove(ref(db, `${ROOT}/customers/${c.id}`))])
+        .then(() => toast('ลบลูกค้าแล้ว'), fail);
     }
   });
 
-  // ---- หน้าลูกค้า: ?customer=รหัส ----
-  const code = new URLSearchParams(location.search).get('customer');
-  if (code !== null) {
-    $('#adminNav').hidden = true;
-    document.querySelectorAll('[role=tabpanel]').forEach(p => p.hidden = true);
-    const c = customers.find(x => x.code === code.toUpperCase());
-    if (!c || !c.enabled) {
-      $('#pageTitle').textContent = 'ลิงก์นี้ใช้ไม่ได้';
-      $('#pageLede').textContent = 'ลิงก์อาจถูกปิดหรือเปลี่ยนแล้ว กรุณาติดต่อ SNP เพื่อขอลิงก์ใหม่';
-      return;
-    }
-    const show = c.show;
-    const pool = jobs.filter(j => j.customerId === c.id);
-    $('#pageTitle').textContent = 'งานขนส่งของ ' + c.name;
-    $('#pageLede').textContent = 'ดูสถานะงานและค้นหาสินค้าของคุณ';
-    const by = ['เลขติดตาม', show.containers && 'เลขแท็ก', show.containers && 'เลขตู้', show.vehicle && 'ทะเบียนรถ'].filter(Boolean);
-    $('#custSearch').placeholder = 'ค้นด้วย' + by.join(' ');
-    $('#customerView').hidden = false;
-    $('#custSearchForm').addEventListener('submit', e => {
-      e.preventDefault();
-      renderSearch($('#custSearch').value, pool, show, $('#custResult'), false);
-    });
-    $('#custJobs').innerHTML = pool.length ? pool.map(j => {
-      const s = statusOf(j.status);
-      return `<div class="list-item">
-        <div class="list-head"><span class="tno">${esc(j.tno)}</span><span class="badge ${s.tone}">${s.label}</span></div>
-        ${show.pickup ? `<div class="muted">เข้ารับ ${esc(j.date)} ${esc(j.slot)}</div>` : ''}
-        <details><summary>ดูรายละเอียด</summary>${show.timeline ? timeline(j) : ''}${jobDetail(j, show)}</details>
-      </div>`;
-    }).join('') : `<p class="empty">ยังไม่มีงาน</p>`;
+  // ---- ย้ายข้อมูลเก่าที่เคยเก็บในเบราว์เซอร์ขึ้นระบบ ----
+  const readLegacy = key => { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } };
+  function checkLegacy() {
+    const oldJobs = readLegacy(LEGACY_JOBS), oldCustomers = readLegacy(LEGACY_CUSTOMERS);
+    if (!oldJobs.length && !oldCustomers.length) return;
+    $('#migrateText').textContent = `เครื่องนี้มีงาน ${oldJobs.length} งาน และลูกค้า ${oldCustomers.length} ราย ที่บันทึกไว้ก่อนเชื่อมระบบออนไลน์ ย้ายขึ้นระบบเพื่อให้ทุกเครื่องและลูกค้าเห็นได้ (งานที่มีเลขซ้ำในระบบแล้วจะข้าม)`;
+    $('#migrateCard').hidden = false;
+    $('#migrateBtn').onclick = async () => {
+      try {
+        const patch = {};
+        const have = new Set(jobs.map(j => j.tno));
+        const haveC = new Set(customers.map(c => c.id));
+        const newCustomers = oldCustomers.filter(c => !haveC.has(c.id))
+          .map(c => ({ ...c, code: c.code.length >= 12 ? c.code : newCode(), show: { ...SHOW_ALL, ...c.show } }));
+        newCustomers.forEach(c => { patch[`customers/${c.id}`] = c; });
+        const newJobs = oldJobs.filter(j => !have.has(j.tno)).map(normJob);
+        newJobs.forEach(j => { patch[`jobs/${j.tno}`] = j; });
+        await update(ref(db, ROOT), clean(patch));
+        customers = [...customers, ...newCustomers];
+        await publishFor(customers.map(c => c.id), [...jobs, ...newJobs]);
+        localStorage.removeItem(LEGACY_JOBS); localStorage.removeItem(LEGACY_CUSTOMERS);
+        $('#migrateCard').hidden = true;
+        toast(`ย้ายขึ้นระบบแล้ว ${newJobs.length} งาน`);
+      } catch (e) { fail(e); }
+    };
   }
-})();
+}
 </script>
 </body>
 </html>

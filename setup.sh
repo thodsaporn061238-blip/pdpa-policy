@@ -10,6 +10,7 @@ need git  || { echo "ไม่พบ git — ติดตั้งจาก http
 need node || { echo "ไม่พบ Node.js — ติดตั้งรุ่น 20 ขึ้นไปจาก https://nodejs.org แล้วรันใหม่"; exit 1; }
 echo "git:  $(git --version)"
 echo "node: $(node --version)"
+need java || { echo "ไม่พบ Java — ต้องใช้รัน Firebase emulator ตอนทดสอบ ติดตั้ง Java 11 ขึ้นไปจาก https://adoptium.net แล้วรันใหม่"; exit 1; }
 
 echo "== ดึงโค้ดล่าสุดจาก GitHub =="
 git fetch origin main
