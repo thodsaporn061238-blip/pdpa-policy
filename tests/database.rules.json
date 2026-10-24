@@ -1,55 +1,1167 @@
 {
   "rules": {
     "companyBilling": {
-      ".read": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'",
-      ".write": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'",
+      ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)",
+      ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)",
       "accessRequests": {
         "$uid": {
-          ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || auth.uid == $uid)",
-          ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || auth.uid == $uid)"
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || auth.uid == $uid)",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || auth.uid == $uid)"
         }
       },
       "authorizedUsers": {
         "$uid": {
-          ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || auth.uid == $uid)",
-          ".write": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'"
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || auth.uid == $uid)",
+          ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)"
         }
       },
       "presence": {
         "$uid": {
-          ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || auth.uid == $uid)",
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || auth.uid == $uid)",
           ".write": "auth != null && auth.uid == $uid"
         }
       },
       "auditLogs": {
-        ".read": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'",
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && query.orderByChild == 'supplierId' && query.equalTo == root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() && root.child('companyBilling/supplierPortal').child(root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()).child('config/features/history').val() != false)) || (auth != null && root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_audit').val() == true)",
         "$logId": {
           ".write": "auth != null && !data.exists() && newData.child('actorUid').val() == auth.uid && newData.child('occurredAt').isString() && newData.child('action').isString()"
-        }
+        },
+        ".indexOn": [
+          "occurredAt",
+          "supplierId"
+        ]
       },
       "companyProfile": {
-        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
-        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/companySettings').val() == true))"
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/companySettings').val() == true))"
       },
       "jobs": {
-        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
-        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true)))"
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$jobId": {
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && (newData.exists() || ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/deleteJobs').val() == true)) && (!data.child('locked').exists() || ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/editLocked').val() == true) && root.child('companyBilling/unlocks').child(auth.uid).child('at').val() > now - 600000)",
+          "status": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "billingNo": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "invoiceDate": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "dueDate": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "paidDate": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "updatedAt": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "paymentProof": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "vehiclePaid": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "expenses": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "driverUid": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "docSettings": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+          },
+          "receipt": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()",
+            ".validate": "!data.exists() || data.child('id').val() == newData.child('id').val() || (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)"
+          },
+          "origin": {
+            "lat": {
+              ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+            },
+            "lng": {
+              ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+            }
+          },
+          "destination": {
+            "lat": {
+              ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+            },
+            "lng": {
+              ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true))) && root.child('companyBilling/jobs').child($jobId).exists()"
+            }
+          },
+          "lockOverride": {
+            ".validate": "(auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/editLocked').val() == true"
+          }
+        },
+        ".indexOn": [
+          "serviceDate"
+        ]
       },
       "customers": {
-        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
-        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/customers').val() == true))"
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/customers').val() == true))"
       },
       "sharedInvoices": {
         "$invoiceId": {
           ".read": true,
-          ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true)))"
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true)))"
+        }
+      },
+      "driverAccounts": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && query.orderByChild == 'supplierId' && query.equalTo == root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()))",
+        "$uid": {
+          ".read": "auth != null && (auth.uid == $uid || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && data.child('supplierId').val() == root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()))",
+          ".write": "auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && newData.exists() && newData.child('supplierId').val() == root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() && (data.exists() ? data.child('supplierId').val() == root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() : (!root.child('companyBilling/authorizedUsers').child($uid).exists() && !root.child('companyBilling/supplierAccounts').child($uid).exists() && !root.child('companyBilling/customerAccounts').child($uid).exists())) && root.child('companyBilling/supplierPortal').child(root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()).child('config/features/manageDrivers').val() != false",
+          "group": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+            ".validate": "!newData.exists() || newData.val() == 'partner'"
+          },
+          "groupManual": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+            ".validate": "!newData.exists() || newData.isBoolean()"
+          }
+        },
+        ".indexOn": [
+          "supplierId"
+        ]
+      },
+      "driverTasks": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true))",
+        "$uid": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || (auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true) || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverAccounts').child($uid).child('supplierId').val() == root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()))",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+          "$jobId": {
+            "progress": {
+              "$step": {
+                ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().parent().exists() && ($step == 'accept' || $step == 'arrivePickup' || $step == 'pickup' || $step == 'arriveDrop' || $step == 'delivered' || $step == 'finish' || $step == 'unloading' || $step == 'dropOff') && newData.exists()",
+                ".validate": "newData.hasChildren(['at', 'by']) && newData.child('at').isString() && (newData.child('by').val() == auth.uid || (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)) && (($step != 'accept' && $step != 'finish') || (newData.child('odometer').isNumber() && newData.child('odometer').val() >= 0)) && ($step != 'finish' || !data.parent().child('accept/odometer').exists() || newData.child('odometer').val() >= data.parent().child('accept/odometer').val()) && (($step != 'accept' && $step != 'finish') || !data.parent().parent().child('plateKey').exists() || newData.parent().parent().parent().parent().parent().child('vehicleOdometers').child(data.parent().parent().child('plateKey').val()).child('odometer').val() == newData.child('odometer').val()) && ($step != 'arrivePickup' || !newData.child('odometer').exists() || (newData.child('odometer').isNumber() && (!data.parent().child('accept/odometer').exists() || newData.child('odometer').val() >= data.parent().child('accept/odometer').val())))"
+              }
+            },
+            "expenses": {
+              "$expId": {
+                ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().parent().exists() && !data.exists() && newData.exists()",
+                ".validate": "newData.hasChildren(['type', 'amount', 'at', 'by']) && newData.child('type').isString() && newData.child('amount').isNumber() && newData.child('amount').val() > 0 && newData.child('amount').val() < 100000 && newData.child('at').isString() && (newData.child('by').val() == auth.uid || (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || data.exists()) && (data.exists() || (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || ((root.child('companyBilling/driverSettings/app/expenses').val() != false) && (!root.child('companyBilling/driverSettings/app/expenseMax').isNumber() || newData.child('amount').val() <= root.child('companyBilling/driverSettings/app/expenseMax').val()) && (!root.child('companyBilling/driverSettings/app/expenseTypes').exists() || root.child('companyBilling/driverSettings/app/expenseTypes').child('0').val() == newData.child('type').val() || root.child('companyBilling/driverSettings/app/expenseTypes').child('1').val() == newData.child('type').val() || root.child('companyBilling/driverSettings/app/expenseTypes').child('2').val() == newData.child('type').val() || root.child('companyBilling/driverSettings/app/expenseTypes').child('3').val() == newData.child('type').val() || root.child('companyBilling/driverSettings/app/expenseTypes').child('4').val() == newData.child('type').val() || root.child('companyBilling/driverSettings/app/expenseTypes').child('5').val() == newData.child('type').val() || root.child('companyBilling/driverSettings/app/expenseTypes').child('6').val() == newData.child('type').val() || root.child('companyBilling/driverSettings/app/expenseTypes').child('7').val() == newData.child('type').val() || root.child('companyBilling/driverSettings/app/expenseTypes').child('8').val() == newData.child('type').val() || root.child('companyBilling/driverSettings/app/expenseTypes').child('9').val() == newData.child('type').val() || root.child('companyBilling/driverSettings/app/expenseTypes').child('10').val() == newData.child('type').val()) && (newData.child('billable').val() != true || root.child('companyBilling/driverSettings/app/expenseBillable').val() == true) && (root.child('companyBilling/driverSettings/app/expensePhoto').val() == false || newData.child('photoId').isString()) && (newData.child('type').val() != 'fuel' || root.child('companyBilling/driverSettings/app/fuelPhotos').val() == false || (newData.child('shots/odo').isString() && newData.child('shots/pump').isString() && newData.child('shots/receipt').isString() && newData.child('odometer').isNumber()))))"
+              }
+            },
+            "pins": {
+              "$which": {
+                ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().parent().exists() && ($which == 'origin' || $which == 'destination') && newData.exists()",
+                ".validate": "newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('at').isString() && (newData.child('by').val() == auth.uid || newData.child('by').val() == data.child('by').val())"
+              }
+            },
+            "dropProgress": {
+              "$i": {
+                ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().parent().exists() && !data.parent().parent().child('progress/finish').exists()",
+                ".validate": "newData.hasChildren(['status','at','by']) && (newData.child('status').val() == 'arrived' || newData.child('status').val() == 'delivered' || newData.child('status').val() == 'failed') && newData.child('at').isString() && (newData.child('by').val() == auth.uid || (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true))"
+              }
+            },
+            "expenseUsed": {
+              "$pid": {
+                ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().parent().exists() && !data.exists() && newData.val() == true"
+              }
+            },
+            ".write": "auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverAccounts').child($uid).child('supplierId').val() == root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() && (root.child('companyBilling/supplierJobs').child(root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()).child($jobId).child('status').val() == 'confirmed' || root.child('companyBilling/supplierJobs').child(root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()).child($jobId).child('status').val() == 'assigned') && !data.child('progress').exists()",
+            "dropAdjust": {
+              "$i": {
+                ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().parent().exists() && !data.parent().parent().child('progress/finish').exists() && (!data.exists() || data.child('status').val() == 'pending' || data.child('status').val() == 'rejected' || data.child('status').val() == 'approved') && newData.child('status').val() == 'pending'",
+                ".validate": "newData.hasChildren(['items','at','by','status']) && (newData.child('by').val() == auth.uid || (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)"
+              }
+            },
+            "docReport": {
+              ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().exists()",
+              ".validate": "!newData.exists() || (newData.child('method').isString() && newData.child('at').isString() && newData.child('by').val() == auth.uid)"
+            },
+            "docPicked": {
+              "$piece": {
+                ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().parent().exists()",
+                ".validate": "!newData.exists() || (newData.child('at').isString() && newData.child('by').val() == auth.uid)"
+              }
+            },
+            "cashCollect": {
+              ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().exists() && data.parent().child('cash').exists()",
+              ".validate": "newData.child('amount').isNumber() && newData.child('amount').val() > 0 && newData.child('amount').val() < 10000000 && newData.child('at').isString() && newData.child('by').val() == auth.uid && (!newData.child('note').exists() || (newData.child('note').isString() && newData.child('note').val().length <= 200)) && !data.exists()"
+            },
+            "scans": {
+              "$id": {
+                ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().parent().exists() && !data.exists()",
+                ".validate": "newData.child('code').isString() && newData.child('code').val().length <= 120 && newData.child('at').isString() && newData.child('by').val() == auth.uid && (newData.child('stage').val() == 'load' || newData.child('stage').val() == 'deliver' || newData.child('stage').val() == 'check' || newData.child('stage').val() == 'count') && (!newData.child('qty').exists() || (newData.child('qty').isNumber() && newData.child('qty').val() >= -1000 && newData.child('qty').val() <= 100000))"
+              }
+            },
+            "countReport": {
+              ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.parent().exists()",
+              ".validate": "newData.child('total').isNumber() && newData.child('total').val() >= 0 && newData.child('at').isString() && newData.child('by').val() == auth.uid"
+            }
+          }
+        }
+      },
+      "podPhotos": {
+        "$jobId": {
+          ".read": "(auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || (root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()))) || (auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('jobs').child($jobId).exists() && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('access').child('showPhotos').val() == true && query.orderByChild == 'kind' && (((query.equalTo == 'checkinPickup' || query.equalTo == 'checkinDrop') && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('access').child('photoCheckin').val() == true) || ((query.equalTo == 'pickupPhoto') && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('access').child('photoPickup').val() == true) || ((query.equalTo == 'unloadPhoto' || query.equalTo == 'dropOffPhoto' || query.equalTo == 'delivery' || query.equalTo == 'failed') && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('access').child('photoDelivery').val() == true) || ((query.equalTo == 'signPickup' || query.equalTo == 'signDrop') && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('access').child('photoSign').val() == true) || ((query.equalTo == 'docPickup' || query.equalTo == 'docDrop' || query.equalTo == 'doc') && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('access').child('photoDoc').val() == true))) || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/supplierJobs').child(root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()).child($jobId).exists() && root.child('companyBilling/supplierPortal').child(root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()).child('config/features/photos').val() != false) || (auth != null && root.child('companyBilling/agentAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/agentAccounts').child(auth.uid).child('perms/seeProof').val() == true && root.child('companyBilling/agentJobs').child(auth.uid).child($jobId).exists())",
+          "$photoId": {
+            ".write": "((auth != null && !data.exists() && newData.exists() && ((root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true) || (root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()))) || (auth != null && data.exists() && !newData.exists() && data.child('by').val() == auth.uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && (data.child('step').val() == 'accept' || data.child('step').val() == 'arrivePickup' || data.child('step').val() == 'pickup' || data.child('step').val() == 'arriveDrop' || data.child('step').val() == 'delivered' || data.child('step').val() == 'finish') && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists() && !root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).child('progress').child(data.child('step').val()).exists())) || (auth != null && data.exists() && !newData.exists() && data.child('by').val() == auth.uid && data.child('step').val() == 'expenseDraft' && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists() && !root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).child('expenseUsed').child($photoId).exists())",
+            ".validate": "newData.hasChildren(['image', 'takenAt', 'by']) && newData.child('by').val() == auth.uid && newData.child('image').isString() && newData.child('image').val().beginsWith('data:image/jpeg;base64,') && newData.child('image').val().length < 700000 && (!newData.child('step').exists() || (newData.child('step').val() == 'accept' || newData.child('step').val() == 'arrivePickup' || newData.child('step').val() == 'pickup' || newData.child('step').val() == 'arriveDrop' || newData.child('step').val() == 'delivered' || newData.child('step').val() == 'finish' || newData.child('step').val() == 'expenseDraft'))"
+          },
+          ".indexOn": [
+            "kind"
+          ]
+        }
+      },
+      "phoneLogins": {
+        "$phone": {
+          ".read": true,
+          ".validate": "newData.hasChildren(['email']) && newData.child('email').isString()",
+          ".write": "auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && newData.exists() && newData.parent().parent().child('driverAccounts').child(newData.child('uid').val()).child('supplierId').val() == root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() && (!data.exists() || root.child('companyBilling/driverAccounts').child(data.child('uid').val()).child('supplierId').val() == root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val())"
+        }
+      },
+      "invites": {
+        "$token": {
+          ".read": true,
+          ".write": "auth != null && data.exists() && !newData.exists() && auth.uid == data.child('uid').val()"
+        }
+      },
+      "driverMessages": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+          ".indexOn": [
+            "at"
+          ],
+          "$msg": {
+            "gotAt": {
+              ".write": "auth != null && auth.uid == $uid",
+              ".validate": "newData.isString() && newData.val().length < 40"
+            },
+            "readAt": {
+              ".write": "auth != null && auth.uid == $uid",
+              ".validate": "newData.isString() && newData.val().length < 40"
+            },
+            "replyAt": {
+              ".write": "auth != null && auth.uid == $uid",
+              ".validate": "newData.isString() && newData.val().length < 40"
+            },
+            "reply": {
+              ".write": "auth != null && auth.uid == $uid",
+              ".validate": "newData.isString() && newData.val().length <= 300"
+            }
+          }
+        }
+      },
+      "soundTests": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+          "gotAt": {
+            ".write": "auth != null && auth.uid == $uid",
+            ".validate": "newData.isString() && newData.val().length < 40"
+          },
+          "ackAt": {
+            ".write": "auth != null && auth.uid == $uid",
+            ".validate": "newData.isString() && newData.val().length < 40"
+          },
+          "heard": {
+            ".write": "auth != null && auth.uid == $uid",
+            ".validate": "newData.isBoolean()"
+          }
+        }
+      },
+      "driverStill": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": false
+      },
+      "driverLocations": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$uid": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true || auth.uid == $uid || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverAccounts').child($uid).child('supplierId').val() == root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() && root.child('companyBilling/supplierPortal').child(root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()).child('config/features/gps').val() != false))",
+          ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true",
+          ".validate": "!newData.exists() || (newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('at').isString())"
+        }
+      },
+      "driverTracks": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$jobId": {
+          "$pointId": {
+            ".write": "auth != null && !data.exists() && newData.exists() && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()",
+            ".validate": "newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('at').isString() && newData.child('by').val() == auth.uid"
+          },
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/supplierJobs').child(root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()).child($jobId).exists() && root.child('companyBilling/supplierPortal').child(root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val()).child('config/features/gps').val() != false) || (auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('jobs').child($jobId).exists() && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('access').child('showGps').val() == true)"
+        }
+      },
+      "vehicleOdometers": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$plate": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true || root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true)",
+          ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && newData.exists()",
+          ".validate": "newData.child('odometer').isNumber() && newData.child('odometer').val() >= 0 && newData.child('odometer').val() < 10000000 && newData.child('at').isString() && (!data.child('odometer').exists() || newData.child('odometer').val() >= data.child('odometer').val() || ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) && newData.child('resetAt').isString() && newData.child('resetAt').val() != data.child('resetAt').val())) && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || newData.child('by').val() == auth.uid)",
+          "resets": {
+            "$r": {
+              ".validate": "(auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (data.exists() && newData.child('to').val() == data.child('to').val() && newData.child('from').val() == data.child('from').val())"
+            }
+          },
+          "resetAt": {
+            ".validate": "(auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || newData.val() == data.val()"
+          },
+          "resetBy": {
+            ".validate": "(auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || newData.val() == data.val()"
+          },
+          "resetReason": {
+            ".validate": "(auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || newData.val() == data.val()"
+          }
+        }
+      },
+      "trackingSettings": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$uid": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true || auth.uid == $uid)",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+          ".validate": "!newData.exists() || newData.child('mode').val() == 'job' || newData.child('mode').val() == 'always' || newData.child('mode').val() == 'none' || newData.child('mode').val() == 'off'"
+        }
+      },
+      "locationRequests": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$uid": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true || auth.uid == $uid)",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+          ".validate": "!newData.exists() || (newData.child('at').isString() && newData.child('by').val() == auth.uid)"
+        }
+      },
+      "places": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/customers').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true)))",
+        "$placeId": {
+          ".validate": "!newData.exists() || newData.child('name').isString()"
+        }
+      },
+      "plannedRoutes": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$jobId": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true || (root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()))",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+          ".validate": "!newData.exists() || (newData.child('line').exists() && newData.child('distanceKm').isNumber())"
+        }
+      },
+      "vehicles": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$id": {
+          ".validate": "!newData.exists() || newData.child('plate').isString()"
+        }
+      },
+      "suppliers": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$id": {
+          ".validate": "!newData.exists() || newData.child('name').isString()"
+        }
+      },
+      "integrations": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)"
+      },
+      "driverShareLinks": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$uid": {
+          ".validate": "!newData.exists() || (newData.child('url').isString() && newData.child('url').val().beginsWith('https://'))"
+        }
+      },
+      "products": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$id": {
+          ".validate": "!newData.exists() || newData.child('name').isString() || newData.child('code').isString()"
+        }
+      },
+      "pricingRates": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$id": {
+          ".validate": "!newData.exists() || newData.child('name').isString() || newData.child('active').isBoolean()"
+        }
+      },
+      "paymentProofs": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$receiptId": {
+          "$id": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true)) && !data.exists()))",
+            ".validate": "!newData.exists() || (newData.child('image').isString() && newData.child('image').val().beginsWith('data:image/jpeg;base64,') && newData.child('image').val().length < 900000 && newData.child('by').val() == auth.uid)"
+          }
+        }
+      },
+      "receiptSeq": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$prefix": {
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true)))",
+          ".validate": "newData.isNumber() && newData.val() >= 1 && (!data.exists() || newData.val() > data.val())"
+        }
+      },
+      "sharedEvidence": {
+        "$id": {
+          ".read": "data.child('expiresAt').isNumber() && data.child('expiresAt').val() > now",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true)))",
+          ".validate": "newData.child('expiresAt').isNumber() && newData.child('expiresAt').val() > now && newData.child('expiresAt').val() <= now + 31708800000"
+        }
+      },
+      "driverSettings": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true || root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/companySettings').val() == true))"
+      },
+      "sharedEvidenceIndex": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$id": {
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true)))"
+        }
+      },
+      "projects": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
+      },
+      "importTemplates": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
+      },
+      "docTranslations": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$k": {
+          ".validate": "newData.child('th').isString() && newData.child('th').val().length <= 2000"
+        }
+      },
+      "jobImportMaps": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
+      },
+      "vrpPlans": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
+      },
+      "pricingSettings": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
+      },
+      "importLogs": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$id": {
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true)) && !data.exists()"
+        }
+      },
+      "orders": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        ".indexOn": [
+          "status",
+          "deliveryDate",
+          "projectId"
+        ],
+        "$id": {
+          ".validate": "!newData.exists() || newData.child('status').isString()"
+        }
+      },
+      "priceForms": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$id": {
+          ".read": "data.child('expiresAt').val() > now || (auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true))",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+          "response": {
+            ".write": "data.parent().child('expiresAt').val() > now && newData.exists()",
+            ".validate": "newData.hasChildren(['name', 'submittedAt', 'prices']) && newData.child('name').isString() && newData.child('name').val().length >= 1 && newData.child('name').val().length <= 100 && newData.child('submittedAt').isString()",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length <= 100"
+            },
+            "company": {
+              ".validate": "newData.isString() && newData.val().length <= 150"
+            },
+            "phone": {
+              ".validate": "newData.isString() && newData.val().length <= 15"
+            },
+            "note": {
+              ".validate": "newData.isString() && newData.val().length <= 500"
+            },
+            "submittedAt": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "prices": {
+              "$prov": {
+                ".validate": "data.parent().parent().parent().child('provinces').exists()",
+                "$size": {
+                  ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 10000000"
+                }
+              }
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        ".indexOn": [
+          "createdAt"
+        ]
+      },
+      "sharedQuotes": {
+        "$id": {
+          ".read": "data.child('expiresAt').isNumber() && data.child('expiresAt').val() > now",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/groupBilling').val() == true)))",
+          ".validate": "newData.child('expiresAt').isNumber() && newData.child('expiresAt').val() > now && newData.child('expiresAt').val() <= now + 31708800000"
+        }
+      },
+      "controlPins": {
+        "$uid": {
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (auth.uid == $uid && root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && auth.token.auth_time * 1000 > now - 600000))",
+          ".validate": "!newData.exists() || (newData.child('hash').isString() && newData.child('hash').val().length == 64)"
+        }
+      },
+      "controlPinSalts": {
+        "$uid": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || auth.uid == $uid)",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (auth.uid == $uid && root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && auth.token.auth_time * 1000 > now - 600000))"
+        }
+      },
+      "unlocks": {
+        "$uid": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || auth.uid == $uid)",
+          ".write": "auth != null && auth.uid == $uid && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+          ".validate": "newData.child('hash').val() == root.child('companyBilling/controlPins').child($uid).child('hash').val() && newData.child('at').val() == now"
+        }
+      },
+      "plateLogins": {
+        "$plate": {
+          ".read": true,
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+          ".validate": "!newData.exists() || newData.child('phone').isString() || newData.child('ambiguous').isBoolean()"
         }
       },
       "$other": {
-        ".read": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'",
-        ".write": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'"
+        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (auth != null && root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && ((($other == 'driverPayments') && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_driverpay').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_vehiclepay').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_tax').val() == true)) || (($other == 'taxFilings' || $other == 'whtCertsIn') && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_tax').val() == true) || ($other == 'drivers' && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_driverpay').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_drivers').val() == true))))",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (auth != null && root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && ((($other == 'driverPayments') && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_driverpay').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_vehiclepay').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_tax').val() == true)) || (($other == 'taxFilings' || $other == 'whtCertsIn') && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_tax').val() == true) || ($other == 'drivers' && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_driverpay').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/menu_drivers').val() == true))))"
+      },
+      "rateTables": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$id": {
+          ".validate": "!newData.exists() || newData.child('name').isString()"
+        }
+      },
+      "billStatements": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$id": {
+          ".validate": "!newData.exists() || (newData.child('no').isString() && newData.child('total').isNumber())"
+        }
+      },
+      "customerAccounts": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/customers').val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && auth.token.email_verified == true && newData.child('customerId').val() == 'u_' + auth.uid && newData.child('selfSignup').val() == true && newData.child('active').val() == true && newData.child('customerName').isString() && newData.child('customerName').val().length >= 2 && newData.child('customerName').val().length <= 100",
+          ".validate": "!newData.exists() || (newData.child('customerId').isString() && newData.child('active').isBoolean())"
+        }
+      },
+      "customerPortal": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/customers').val() == true))",
+        "$cid": {
+          ".read": "auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val() == $cid && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true"
+        }
+      },
+      "customerBookings": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$cid": {
+          ".read": "auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val() == $cid && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true",
+          "$bid": {
+            ".write": "auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val() == $cid && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && ((!data.exists() && newData.child('uid').val() == auth.uid && newData.child('status').val() == 'new') || (data.exists() && data.child('uid').val() == auth.uid && data.child('status').val() == 'new' && newData.exists() && newData.child('status').val() == 'cancelled' && newData.child('uid').val() == auth.uid))",
+            ".validate": "!newData.exists() || (newData.child('customerId').val() == $cid && newData.child('status').isString() && newData.child('date').isString() && newData.child('uid').isString())"
+          }
+        }
+      },
+      "portalPromo": {
+        ".read": "true",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/companySettings').val() == true))",
+        ".validate": "!newData.exists() || (newData.child('tagline').isString() && newData.child('tagline').val().length <= 80)"
+      },
+      "usageStats": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$month": {
+          "$sku": {
+            ".write": "(auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true || root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true)) || ($month.matches(/^[0-9]{4}-[0-9]{2}$/) && $sku.matches(/^[a-zA-Z]{3,30}$/) && newData.isNumber() && newData.val() > (data.exists() ? data.val() : 0) && newData.val() <= (data.exists() ? data.val() : 0) + 50)",
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 100000000"
+          }
+        }
+      },
+      "usageLimits": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)",
+        "$sku": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        }
+      },
+      "customerPresence": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$uid": {
+          ".write": "auth != null && auth.uid == $uid && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true",
+          ".validate": "!newData.exists() || (newData.child('online').isBoolean() && newData.child('customerId').val() == root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val())",
+          "draft": {
+            ".validate": "newData.isString() && newData.val().length <= 4000"
+          }
+        }
+      },
+      "portalSettings": {
+        ".read": "true",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/companySettings').val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
+      },
+      "fuelDaily": {
+        ".read": "auth != null",
+        "$day": {
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+          ".validate": "$day.matches(/^\\d{4}-\\d{2}-\\d{2}$/) && newData.child('diesel').isNumber() && newData.child('diesel').val() > 5 && newData.child('diesel').val() < 200"
+        }
+      },
+      "fuelAnnounce": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true || root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true) && newData.exists()",
+        ".validate": "newData.child('source').val() == 'bangchak' && newData.child('fetchedAt').isString() && newData.child('list').exists() && newData.child('by').val() == auth.uid"
+      },
+      "fuelAdjustLog": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
+      },
+      "customerLogins": {
+        "$h": {
+          ".read": "true",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/customers').val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+          ".validate": "!newData.exists() || newData.child('email').isString()"
+        }
+      },
+      "publicPrices": {
+        ".read": "true",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
+      },
+      "publicBookings": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$id": {
+          ".write": "(!data.exists() && newData.exists() && newData.child('status').val() == 'new' && newData.child('public').val() == true) || (auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true)))",
+          ".validate": "!newData.exists() || (newData.child('contactName').isString() && newData.child('contactName').val().length > 0 && newData.child('contactName').val().length <= 100 && newData.child('contactPhone').isString() && newData.child('contactPhone').val().matches(/^0\\d{8,9}$/) && newData.child('date').isString() && newData.child('status').isString())"
+        }
+      },
+      "customerPayments": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$cid": {
+          ".read": "auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val() == $cid && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true",
+          "$id": {
+            ".write": "auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val() == $cid && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && !data.exists() && newData.child('uid').val() == auth.uid && newData.child('status').val() == 'submitted'",
+            ".validate": "!newData.exists() || (newData.child('amount').isNumber() && newData.child('status').isString() && (!newData.child('slip').exists() || (newData.child('slip').isString() && newData.child('slip').val().length < 700000)))"
+          }
+        }
+      },
+      "publicPresence": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$vid": {
+          ".write": "$vid.matches(/^v_[a-z0-9]{10,24}$/)",
+          ".validate": "!newData.exists() || newData.child('online').isBoolean()",
+          "online": {
+            ".validate": "newData.isBoolean()"
+          },
+          "page": {
+            ".validate": "newData.isString() && newData.val().length <= 30"
+          },
+          "activity": {
+            ".validate": "newData.isString() && newData.val().length <= 80"
+          },
+          "name": {
+            ".validate": "newData.isString() && newData.val().length <= 60"
+          },
+          "phone": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-9]{0,10}$/)"
+          },
+          "device": {
+            ".validate": "newData.isString() && newData.val().length <= 10"
+          },
+          "since": {
+            ".validate": "newData.isNumber()"
+          },
+          "lastSeen": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          },
+          "draft": {
+            ".validate": "newData.isString() && newData.val().length <= 4000"
+          }
+        }
+      },
+      "portalMedia": {
+        ".read": "true",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && (root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/companySettings').val() == true)))",
+        "popup": {
+          ".validate": "newData.isString() && newData.val().length <= 450000"
+        },
+        "vehicles": {
+          "$code": {
+            ".validate": "$code.matches(/^[A-Z0-9]{1,10}$/) && newData.isString() && newData.val().length <= 150000"
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      },
+      "jobLive": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$jobId": {
+          "stage": {
+            ".read": "(auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('jobs').child($jobId).exists()) || root.child('companyBilling/publicTrack').child($jobId).exists()",
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()",
+            ".validate": "!newData.exists() || (newData.child('step').isString() && newData.child('step').val().length <= 20 && newData.child('at').isString())"
+          },
+          "pos": {
+            ".read": "(auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('jobs').child($jobId).exists() && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('access').child('showGps').val() == true) || root.child('companyBilling/publicTrack').child($jobId).exists()",
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()",
+            ".validate": "!newData.exists() || (newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('at').isString())"
+          },
+          "drops": {
+            ".read": "(auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('jobs').child($jobId).exists()) || root.child('companyBilling/publicTrack').child($jobId).exists()",
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()",
+            "$i": {
+              ".validate": "newData.child('status').isString() && newData.child('status').val().length <= 12 && newData.child('at').isString()"
+            }
+          },
+          "trip": {
+            ".read": "(auth != null && root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/customerPortal').child(root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val()).child('jobs').child($jobId).exists()) || root.child('companyBilling/publicTrack').child($jobId).exists()",
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()",
+            ".validate": "!newData.exists() || (newData.child('pct').isNumber() && newData.child('pct').val() >= 0 && newData.child('pct').val() <= 100 && newData.child('at').isString())"
+          }
+        }
+      },
+      "publicTrack": {
+        "$jobId": {
+          ".read": "true",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true) || (root.child('companyBilling/agentAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/agentAccounts').child(auth.uid).child('perms/shareTrack').val() == true && root.child('companyBilling/agentJobs').child(auth.uid).child($jobId).exists()))",
+          ".validate": "!newData.exists() || (newData.child('at').isString() && newData.child('by').val() == auth.uid)"
+        }
+      },
+      "companyPublic": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true || root.child('companyBilling/agentAccounts').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)"
+      },
+      "agentAccounts": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)"
+        }
+      },
+      "agentRequests": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          "$id": {
+            ".write": "auth != null && (((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true)) || (auth.uid == $uid && root.child('companyBilling/agentAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/agentAccounts').child(auth.uid).child('perms/create').val() != false && (!data.exists() || data.child('status').val() != 'accepted') && (!newData.exists() || newData.child('status').val() == 'pending')))",
+            ".validate": "!newData.exists() || (newData.child('customerName').isString() && newData.child('customerName').val().length <= 120 && newData.child('price').isNumber())"
+          }
+        }
+      },
+      "agentJobs": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
+        }
+      },
+      "supplierAccounts": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".validate": "!newData.exists() || (newData.child('supplierId').isString() && newData.child('active').isBoolean())"
+        }
+      },
+      "supplierPortal": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$sid": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() == $sid)",
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
+        }
+      },
+      "supplierJobs": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$sid": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() == $sid && root.child('companyBilling/supplierPortal').child($sid).child('config/enabled').val() != false)",
+          "$jobId": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+            "status": {
+              ".write": "auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() == $sid && root.child('companyBilling/supplierPortal').child($sid).child('config/enabled').val() != false && ((data.val() == 'offered' && (newData.val() == 'accepted' || (newData.val() == 'rejected' && root.child('companyBilling/supplierPortal').child($sid).child('config/features/rejectJobs').val() != false))) || ((data.val() == 'confirmed' || data.val() == 'assigned') && newData.val() == 'assigned'))"
+            },
+            "response": {
+              ".write": "auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() == $sid && newData.exists() && (data.parent().child('status').val() == 'offered' || data.parent().child('status').val() == 'accepted' || data.parent().child('status').val() == 'rejected')",
+              ".validate": "newData.child('at').isString() && newData.child('by').val() == auth.uid && (!newData.child('reason').exists() || (newData.child('reason').isString() && newData.child('reason').val().length <= 300))"
+            },
+            "assign": {
+              ".write": "auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() == $sid && newData.exists() && (data.parent().child('status').val() == 'confirmed' || data.parent().child('status').val() == 'assigned')",
+              ".validate": "newData.child('driverUid').isString() && newData.parent().parent().parent().parent().child('driverAccounts').child(newData.child('driverUid').val()).child('supplierId').val() == $sid && newData.child('at').isString()"
+            },
+            "docReport": {
+              ".write": "auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() == $sid && data.parent().exists()",
+              ".validate": "!newData.exists() || (newData.child('method').isString() && newData.child('at').isString() && newData.child('by').val() == auth.uid)"
+            }
+          }
+        }
+      },
+      "supplierVehicles": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$sid": {
+          ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() == $sid)",
+          "$vid": {
+            ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true)) || (auth != null && root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/supplierAccounts').child(auth.uid).child('supplierId').val() == $sid && newData.exists() && root.child('companyBilling/supplierPortal').child($sid).child('config/features/manageVehicles').val() != false)",
+            ".validate": "!newData.exists() || (newData.child('plate').isString() && newData.child('plate').val().length >= 2 && newData.child('plate').val().length <= 30)"
+          }
+        }
+      },
+      "supplierLogins": {
+        "$key": {
+          ".read": true,
+          ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+          ".validate": "!newData.exists() || (newData.child('email').isString() && newData.child('uid').isString())"
+        }
+      },
+      "zones": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$zoneId": {
+          ".validate": "!newData.exists() || (newData.child('name').isString() && newData.child('name').val().length <= 80 && newData.child('color').isString() && newData.child('color').val().length <= 20)"
+        }
+      },
+      "productImages": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$pid": {
+          ".read": "auth != null && (((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true)",
+          ".write": "auth != null && (((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true)) || (root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && !data.exists() && newData.exists() && root.child('companyBilling/products').child($pid).exists()))",
+          ".validate": "!newData.exists() || (newData.child('image').isString() && newData.child('image').val().beginsWith('data:image/') && newData.child('image').val().length < 700000 && newData.child('at').isString() && (newData.child('source').val() == 'office' || (newData.child('source').val() == 'driver' && newData.child('by').val() == auth.uid)))"
+        }
+      },
+      "deviceLimits": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)",
+        "$app": {
+          ".validate": "$app == 'staff' || $app == 'driver' || $app == 'customer'"
+        }
+      },
+      "deviceSessions": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$app": {
+          ".validate": "$app == 'staff' || $app == 'driver' || $app == 'customer'",
+          "$uid": {
+            ".read": "auth != null && (auth.uid == $uid || ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true))",
+            "$device": {
+              ".write": "auth != null && (auth.uid == $uid || (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true))",
+              ".validate": "!newData.exists() || ($device.length <= 40 && (!newData.child('name').exists() || (newData.child('name').isString() && newData.child('name').val().length <= 80)) && (!newData.child('lastSeen').exists() || newData.child('lastSeen').isString()) && (!newData.child('active').exists() || newData.child('active').isBoolean()) && (!newData.child('signedIn').exists() || newData.child('signedIn').isBoolean()) && (!newData.child('kickedBy').exists() || newData.child('kickedBy').val() == 'office'))"
+            }
+          }
+        }
+      },
+      "pushTokens": {
+        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)",
+        "driver": {
+          "$uid": {
+            "$dev": {
+              ".write": "auth != null && auth.uid == $uid && (root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true || !newData.exists())",
+              ".validate": "!newData.exists() || (newData.child('token').isString() && newData.child('token').val().length > 20 && newData.child('token').val().length < 600 && newData.child('at').isString() && (!newData.child('platform').exists() || newData.child('platform').isString())) && $dev.length <= 40",
+              "cats": {
+                ".validate": "newData.hasChildren() || !newData.exists()"
+              }
+            }
+          }
+        },
+        "staff": {
+          "$uid": {
+            "$dev": {
+              ".write": "auth != null && auth.uid == $uid && (((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || !newData.exists())",
+              ".validate": "!newData.exists() || (newData.child('token').isString() && newData.child('token').val().length > 20 && newData.child('token').val().length < 600 && newData.child('at').isString() && (!newData.child('platform').exists() || newData.child('platform').isString())) && $dev.length <= 40",
+              "cats": {
+                ".validate": "newData.hasChildren() || !newData.exists()"
+              }
+            }
+          }
+        },
+        "supplier": {
+          "$uid": {
+            "$dev": {
+              ".write": "auth != null && auth.uid == $uid && (root.child('companyBilling/supplierAccounts').child(auth.uid).child('active').val() == true || !newData.exists())",
+              ".validate": "!newData.exists() || (newData.child('token').isString() && newData.child('token').val().length > 20 && newData.child('token').val().length < 600 && newData.child('at').isString() && (!newData.child('platform').exists() || newData.child('platform').isString())) && $dev.length <= 40",
+              "cats": {
+                ".validate": "newData.hasChildren() || !newData.exists()"
+              }
+            }
+          }
+        },
+        "customer": {
+          "$uid": {
+            "$dev": {
+              ".write": "auth != null && auth.uid == $uid && (root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true || !newData.exists())",
+              ".validate": "!newData.exists() || (newData.child('token').isString() && newData.child('token').val().length > 20 && newData.child('token').val().length < 600 && newData.child('at').isString() && (!newData.child('platform').exists() || newData.child('platform').isString())) && $dev.length <= 40",
+              "cats": {
+                ".validate": "newData.hasChildren() || !newData.exists()"
+              }
+            }
+          }
+        },
+        "agent": {
+          "$uid": {
+            "$dev": {
+              ".write": "auth != null && auth.uid == $uid && (root.child('companyBilling/agentAccounts').child(auth.uid).child('active').val() == true || !newData.exists())",
+              ".validate": "!newData.exists() || (newData.child('token').isString() && newData.child('token').val().length > 20 && newData.child('token').val().length < 600 && newData.child('at').isString() && (!newData.child('platform').exists() || newData.child('platform').isString())) && $dev.length <= 40",
+              "cats": {
+                ".validate": "newData.hasChildren() || !newData.exists()"
+              }
+            }
+          }
+        }
+      },
+      "pushSent": {
+        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)",
+        ".write": "false"
+      },
+      "chats": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$cid": {
+          ".read": "auth != null && (((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || (root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val() == $cid))",
+          "$id": {
+            ".write": "auth != null && !data.exists() && newData.exists() && ((((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) && newData.child('from').val() == 'staff') || ((root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val() == $cid) && newData.child('from').val() == 'customer'))",
+            ".validate": "newData.child('uid').val() == auth.uid && newData.child('at').isString() && (newData.child('text').isString() && newData.child('text').val().length <= 1000 || newData.child('image').isString() && newData.child('image').val().beginsWith('data:image/') && newData.child('image').val().length < 400000) && (!newData.child('name').exists() || newData.child('name').val().length <= 60)"
+          }
+        }
+      },
+      "chatMeta": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$cid": {
+          ".read": "auth != null && (((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || (root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val() == $cid))",
+          ".write": "auth != null && (((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true) || (root.child('companyBilling/customerAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/customerAccounts').child(auth.uid).child('customerId').val() == $cid))",
+          ".validate": "newData.hasChildren() && (!newData.child('lastText').exists() || newData.child('lastText').val().length <= 120) && (!newData.child('customerName').exists() || newData.child('customerName').val().length <= 100)"
+        }
+      },
+      "vehicleService": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$vid": {
+          "$id": {
+            ".validate": "!newData.exists() || (newData.child('date').isString() && newData.child('type').isString() && (!newData.child('note').exists() || newData.child('note').val().length <= 300))"
+          }
+        }
+      },
+      "vehicleFuel": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$vid": {
+          "$id": {
+            ".validate": "!newData.exists() || (newData.child('date').isString() && newData.child('liters').isNumber() && newData.child('liters').val() > 0 && newData.child('liters').val() < 2000 && (!newData.child('note').exists() || newData.child('note').val().length <= 300))"
+          }
+        }
+      },
+      "insightActions": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$k": {
+          ".validate": "!newData.exists() || (newData.child('at').isString() && newData.child('title').val().length <= 200)"
+        }
+      },
+      "kpiSettings": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$k": {
+          ".validate": "newData.isNumber() || ($k == 'updatedAt' || $k == 'updatedBy') && newData.isString() && newData.val().length < 120"
+        }
+      },
+      "weatherWatch": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        ".validate": "!newData.exists() || newData.child('mode').val() == 'assigned' || newData.child('mode').val() == 'pick'"
+      },
+      "trackDisplay": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        ".validate": "!newData.exists() || (newData.child('overSpeed').isNumber() && newData.child('stopMinutes').isNumber())"
+      },
+      "itemTags": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$key": {
+          ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && newData.child('uid').val() == auth.uid && newData.child('jobId').isString() && newData.child('jobId').val() != '' && root.child('companyBilling/driverTasks').child(auth.uid).child(newData.child('jobId').val()).exists()",
+          ".validate": "newData.child('code').isString() && newData.child('code').val().length <= 120 && newData.child('status').isString() && newData.child('at').isString() && newData.child('uid').isString()"
+        }
+      },
+      "itemTagLog": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$key": {
+          "$id": {
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && newData.child('uid').val() == auth.uid && newData.child('jobId').isString() && newData.child('jobId').val() != '' && root.child('companyBilling/driverTasks').child(auth.uid).child(newData.child('jobId').val()).exists() && !data.exists()",
+            ".validate": "newData.child('code').isString() && newData.child('code').val().length <= 120 && newData.child('status').isString() && newData.child('at').isString() && newData.child('uid').isString()"
+          }
+        }
+      },
+      "jobChats": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$jobId": {
+          ".read": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()",
+          "$msg": {
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists() && !data.exists()",
+            ".validate": "newData.child('text').isString() && newData.child('text').val().length <= 1000 && newData.child('at').isString() && newData.child('uid').val() == auth.uid && (newData.child('from').val() == 'staff' || newData.child('from').val() == 'driver')"
+          }
+        }
+      },
+      "jobChatMeta": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$jobId": {
+          ".read": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()",
+          ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/driverTasks').child(auth.uid).child($jobId).exists()",
+          ".validate": "newData.child('lastAt').isString() || newData.child('staffSeen').isString() || newData.child('driverSeen').isString()"
+        }
+      },
+      "driverRadio": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$ch": {
+          ".read": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && (($ch == 'snp' && !root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').exists() && root.child('companyBilling/driverAccounts').child(auth.uid).child('group').val() != 'partner') || ($ch == 'partner' && !root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').exists() && root.child('companyBilling/driverAccounts').child(auth.uid).child('group').val() == 'partner') || root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').val() == $ch)",
+          "$msg": {
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && (($ch == 'snp' && !root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').exists() && root.child('companyBilling/driverAccounts').child(auth.uid).child('group').val() != 'partner') || ($ch == 'partner' && !root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').exists() && root.child('companyBilling/driverAccounts').child(auth.uid).child('group').val() == 'partner') || root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').val() == $ch) && !data.exists()",
+            ".validate": "newData.child('uid').val() == auth.uid && newData.child('at').isString() && (!newData.child('text').exists() || (newData.child('text').isString() && newData.child('text').val().length <= 300)) && (!newData.child('voice').exists() || (newData.child('voice').isString() && newData.child('voice').val().length <= 200000 && newData.child('voice').val().beginsWith('data:audio/'))) && (newData.child('text').exists() || newData.child('voice').exists() || newData.child('loc').exists())"
+          }
+        }
+      },
+      "radioOnline": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$ch": {
+          ".read": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && (($ch == 'snp' && !root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').exists() && root.child('companyBilling/driverAccounts').child(auth.uid).child('group').val() != 'partner') || ($ch == 'partner' && !root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').exists() && root.child('companyBilling/driverAccounts').child(auth.uid).child('group').val() == 'partner') || root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').val() == $ch)",
+          "$uid": {
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && (($ch == 'snp' && !root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').exists() && root.child('companyBilling/driverAccounts').child(auth.uid).child('group').val() != 'partner') || ($ch == 'partner' && !root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').exists() && root.child('companyBilling/driverAccounts').child(auth.uid).child('group').val() == 'partner') || root.child('companyBilling/driverAccounts').child(auth.uid).child('supplierId').val() == $ch) && $uid == auth.uid",
+            ".validate": "newData.child('at').isString()"
+          }
+        }
+      },
+      "convoys": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$cid": {
+          ".read": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && data.child('members').child(auth.uid).exists()",
+          ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && !data.exists() && newData.child('createdBy').val() == auth.uid && newData.child('by').val() == 'driver' && newData.child('members').child(auth.uid).exists()",
+          ".validate": "newData.child('createdAt').isString() && newData.child('expiresAt').isString()",
+          "members": {
+            "$uid": {
+              ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/convoys').child($cid).child('members').child(auth.uid).exists() && (($uid == auth.uid && !newData.exists()) || (newData.exists() && (root.child('companyBilling/convoyJoin').child($cid).child($uid).exists() || (root.child('companyBilling/convoyCalls').child(auth.uid).child($uid).exists() || root.child('companyBilling/convoyCalls').child($uid).child(auth.uid).child('accepted').val() == true))) || (!newData.exists() && root.child('companyBilling/convoys').child($cid).child('closed').val() == true))",
+              ".validate": "!newData.exists() || (newData.child('name').isString() && ($uid == auth.uid || data.exists() || root.child('companyBilling/convoyJoin').child($cid).child($uid).exists() || (root.child('companyBilling/convoyCalls').child(auth.uid).child($uid).exists() || root.child('companyBilling/convoyCalls').child($uid).child(auth.uid).child('accepted').val() == true) || (auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true)))))"
+            }
+          },
+          "live": {
+            "$uid": {
+              ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && $uid == auth.uid && root.child('companyBilling/convoys').child($cid).child('members').child(auth.uid).exists()",
+              ".validate": "!newData.exists() || newData.child('at').isString()"
+            }
+          },
+          "closed": {
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/convoys').child($cid).child('members').child(auth.uid).exists() && newData.val() == true"
+          }
+        }
+      },
+      "convoyOf": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && (($uid == auth.uid && (!newData.exists() || newData.parent().parent().child('convoys').child(newData.child('cid').val()).child('members').child(auth.uid).exists())) || (newData.exists() && newData.parent().parent().child('convoys').child(newData.child('cid').val()).child('members').child(auth.uid).exists() && newData.parent().parent().child('convoys').child(newData.child('cid').val()).child('members').child($uid).exists() && (root.child('companyBilling/convoyJoin').child(newData.child('cid').val()).child($uid).exists() || (root.child('companyBilling/convoyCalls').child(auth.uid).child($uid).exists() || root.child('companyBilling/convoyCalls').child($uid).child(auth.uid).child('accepted').val() == true))))",
+          ".validate": "!newData.exists() || newData.child('cid').isString()"
+        }
+      },
+      "convoyInvites": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$code": {
+          ".read": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true",
+          ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && newData.exists() && newData.child('from').val() == auth.uid && root.child('companyBilling/convoys').child(newData.child('cid').val()).child('members').child(auth.uid).exists() && (!data.exists() || data.child('from').val() == auth.uid || data.child('expiresMs').val() < now)",
+          ".validate": "$code.length == 6 && newData.child('cid').isString() && newData.child('expiresMs').isNumber() && newData.child('expiresMs').val() <= now + 660000"
+        }
+      },
+      "convoyJoin": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$cid": {
+          ".read": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/convoys').child($cid).child('members').child(auth.uid).exists()",
+          "$uid": {
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && ((newData.exists() && $uid == auth.uid && root.child('companyBilling/convoyInvites').child(newData.child('code').val()).child('cid').val() == $cid && root.child('companyBilling/convoyInvites').child(newData.child('code').val()).child('expiresMs').val() > now) || (!newData.exists() && ($uid == auth.uid || root.child('companyBilling/convoys').child($cid).child('members').child(auth.uid).exists())))",
+            ".validate": "!newData.exists() || (newData.child('code').isString() && newData.child('name').isString())"
+          }
+        }
+      },
+      "convoyMsgs": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$cid": {
+          ".read": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/convoys').child($cid).child('members').child(auth.uid).exists()",
+          "$msg": {
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && root.child('companyBilling/convoys').child($cid).child('members').child(auth.uid).exists() && root.child('companyBilling/convoys').child($cid).child('closed').val() != true && !data.exists()",
+            ".validate": "newData.child('uid').val() == auth.uid && newData.child('at').isString() && (!newData.child('text').exists() || (newData.child('text').isString() && newData.child('text').val().length <= 300)) && (!newData.child('voice').exists() || (newData.child('voice').isString() && newData.child('voice').val().length <= 200000 && newData.child('voice').val().beginsWith('data:audio/'))) && (newData.child('text').exists() || newData.child('voice').exists() || newData.child('loc').exists())"
+          }
+        }
+      },
+      "driverCodes": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$code": {
+          ".read": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true",
+          ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && newData.exists() && newData.child('uid').val() == auth.uid && (!data.exists() || data.child('uid').val() == auth.uid)",
+          ".validate": "$code.length == 6 && newData.child('uid').isString() && newData.child('name').isString()"
+        }
+      },
+      "driverCodeOf": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && $uid == auth.uid && newData.exists() && newData.parent().parent().child('driverCodes').child(newData.val()).child('uid').val() == auth.uid",
+          ".validate": "newData.isString()"
+        }
+      },
+      "convoyCalls": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        "$target": {
+          ".read": "auth != null && auth.uid == $target",
+          "$from": {
+            ".read": "auth != null && auth.uid == $from",
+            ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && (($from == auth.uid && (!newData.exists() || (!newData.child('accepted').exists() && $target != auth.uid && root.child('companyBilling/driverAccounts').child($target).child('active').val() == true))) || ($target == auth.uid && data.exists() && (!newData.exists() || (newData.child('accepted').val() == true && newData.child('name').val() == data.child('name').val()))))",
+            ".validate": "!newData.exists() || (newData.child('name').isString() && newData.child('at').isString())"
+          }
+        }
+      },
+      "barcodeNames": {
+        ".read": "(auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)) || (auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))",
+        "$key": {
+          ".write": "auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true && newData.exists() && newData.child('by').val() == auth.uid",
+          ".validate": "!newData.exists() || (newData.child('code').isString() && newData.child('code').val().length <= 120 && newData.child('name').isString() && newData.child('name').val().length <= 120 && newData.child('at').isString() && (!newData.child('photo').exists() || (newData.child('photo').isString() && newData.child('photo').val().length <= 90000 && newData.child('photo').val().beginsWith('data:image/'))))"
+        }
+      },
+      "productIndex": {
+        ".read": "(auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)) || (auth != null && root.child('companyBilling/driverAccounts').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || (root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true && root.child('companyBilling/authorizedUsers').child(auth.uid).child('permissions/manageJobs').val() == true))"
       }
     },
+    "systemBackups": {
+      ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)",
+      ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)"
+    },
+    "coOwners": {
+      ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true)",
+      "$uid": {
+        ".read": "auth != null && ((auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true) || auth.uid == $uid)",
+        ".write": "auth != null && auth.token.email == 'thodsaporn061238@gmail.com'",
+        ".validate": "!newData.exists() || newData.val() == true"
+      }
+    }    ,
     "snpTransport": {
       "jobs": {
         ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
