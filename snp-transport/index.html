@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="ระบบขนส่ง SNP จองรถส่งของ คำนวณค่าขนส่ง และติดตามสถานะงานขนส่ง">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚚</text></svg>">
+<title>ระบบขนส่ง SNP</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&family=Sarabun:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:   #F6F8FA;
+    --surface: #FFFFFF;
+    --ink:     #141A21;
+    --ink-2:   #4E5A66;
+    --ink-3:   #7C8793;
+    --line:    #DDE3E9;
+    --accent:  #1F5FAE;
+    --accent-2:#E6EEF8;
+    --ok:      #2F6B4F;
+    --ok-bg:   #E9F1EC;
+    --warn:    #8A5A00;
+    --warn-bg: #FBF1DC;
+    --bad:     #9B2C2C;
+    --bad-bg:  #F8E6E6;
+    --radius: 14px;
+    --serif: "Noto Serif Thai", "Leelawadee UI", Georgia, serif;
+    --sans: "Sarabun", "Leelawadee UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #0F1317;
+      --surface: #171C22;
+      --ink:     #E9EEF3;
+      --ink-2:   #A6B1BC;
+      --ink-3:   #75808B;
+      --line:    #2A323B;
+      --accent:  #7FB0EC;
+      --accent-2:#1A2633;
+      --ok:      #8FC7A9;
+      --ok-bg:   #1B2620;
+      --warn:    #E7C27A;
+      --warn-bg: #2A2316;
+      --bad:     #F0A0A0;
+      --bad-bg:  #2C1A1A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:   #0F1317;
+    --surface: #171C22;
+    --ink:     #E9EEF3;
+    --ink-2:   #A6B1BC;
+    --ink-3:   #75808B;
+    --line:    #2A323B;
+    --accent:  #7FB0EC;
+    --accent-2:#1A2633;
+    --ok:      #8FC7A9;
+    --ok-bg:   #1B2620;
+    --warn:    #E7C27A;
+    --warn-bg: #2A2316;
+    --bad:     #F0A0A0;
+    --bad-bg:  #2C1A1A;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 44rem; margin: 0 auto; padding: 0 16px 64px; }
+  a { color: var(--accent); }
+  h1, h2 { font-family: var(--serif); line-height: 1.35; text-wrap: balance; }
+
+  header { padding-block: 32px 20px; }
+  .eyebrow { font-size: 12px; letter-spacing: .16em; color: var(--accent); font-weight: 600; margin: 0 0 8px; }
+  h1 { font-size: clamp(26px, 6vw, 34px); margin: 0 0 6px; }
+  .lede { color: var(--ink-2); margin: 0; }
+
+  nav.tabs {
+    display: flex; gap: 6px; overflow-x: auto; padding: 4px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    margin-bottom: 20px; scrollbar-width: none;
+  }
+  nav.tabs button {
+    flex: 1 0 auto; border: 0; background: none; color: var(--ink-2);
+    font: 500 15px var(--sans); padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  }
+  @media (max-width: 420px) { nav.tabs button { font-size: 14px; padding: 8px 8px; } }
+  nav.tabs button[aria-selected="true"] { background: var(--accent); color: var(--surface); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+  }
+  .card h2 { font-size: 19px; margin: 0 0 14px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 18px; }
+  legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
+  .grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+  .grid .full { grid-column: 1 / -1; }
+  @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
+  label.f { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--ink-2); }
+  input, select, textarea {
+    font: 16px var(--sans); color: var(--ink); background: var(--paper);
+    border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  textarea { resize: vertical; min-height: 60px; }
+
+  .vehicles { display: grid; gap: 8px; grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 520px) { .vehicles { grid-template-columns: 1fr; } }
+  .vehicle { position: relative; }
+  .vehicle input { position: absolute; opacity: 0; }
+  .vehicle span {
+    display: block; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px;
+    cursor: pointer; background: var(--paper);
+  }
+  .vehicle b { display: block; }
+  .vehicle small { color: var(--ink-3); }
+  .vehicle input:checked + span { border-color: var(--accent); background: var(--accent-2); }
+  .vehicle input:focus-visible + span { outline: 2px solid var(--accent); }
+
+  .quote {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    background: var(--accent-2); border-radius: 12px; padding: 14px 16px; margin: 4px 0 16px;
+  }
+  .quote .amt { font: 700 26px var(--serif); color: var(--accent); white-space: nowrap; }
+  .quote small { color: var(--ink-2); display: block; }
+
+  .consent { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--ink-2); margin-bottom: 16px; }
+  .consent input { width: auto; margin-top: 4px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    font: 600 16px var(--sans); border-radius: 999px; padding: 10px 20px; cursor: pointer;
+    border: 1px solid var(--accent); background: var(--accent); color: var(--surface);
+  }
+  .btn.ghost { background: transparent; color: var(--accent); }
+  .btn.sm { font-size: 14px; padding: 6px 12px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .row > input { flex: 1 1 200px; width: auto; }
+
+  .badge { display: inline-block; font-size: 13px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--accent-2); color: var(--accent); }
+  .badge.ok { background: var(--ok-bg); color: var(--ok); }
+  .badge.warn { background: var(--warn-bg); color: var(--warn); }
+  .badge.bad { background: var(--bad-bg); color: var(--bad); }
+
+  .tno { font: 600 15px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .04em; }
+  dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 12px 0; font-size: 15px; }
+  dl.kv dt { color: var(--ink-3); }
+  dl.kv dd { margin: 0; overflow-wrap: anywhere; }
+
+  ol.timeline { list-style: none; padding: 0; margin: 14px 0 0; }
+  ol.timeline li { position: relative; padding: 0 0 14px 26px; color: var(--ink-3); }
+  ol.timeline li::before {
+    content: ""; position: absolute; left: 5px; top: 7px; width: 10px; height: 10px;
+    border-radius: 50%; border: 2px solid var(--line); background: var(--surface);
+  }
+  ol.timeline li:not(:last-child)::after {
+    content: ""; position: absolute; left: 10px; top: 20px; bottom: 0; width: 2px; background: var(--line);
+  }
+  ol.timeline li.done { color: var(--ink); }
+  ol.timeline li.done::before { border-color: var(--accent); background: var(--accent); }
+  ol.timeline time { display: block; font-size: 13px; color: var(--ink-3); }
+
+  .list-item { border-top: 1px solid var(--line); padding: 14px 0; }
+  .list-item:first-of-type { border-top: 0; }
+  .list-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .muted { color: var(--ink-3); font-size: 14px; }
+  .empty { text-align: center; color: var(--ink-3); padding: 24px 0; }
+
+  table.rates { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.rates th, table.rates td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  table.rates th { color: var(--ink-3); font-weight: 500; }
+  table.rates td:not(:first-child), table.rates th:not(:first-child) { text-align: right; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    background: var(--ink); color: var(--paper); padding: 10px 18px; border-radius: 999px;
+    font-size: 15px; opacity: 0; pointer-events: none; transition: opacity .2s; max-width: calc(100% - 32px);
+  }
+  .toast.show { opacity: 1; }
+  [hidden] { display: none !important; }
+  footer { color: var(--ink-3); font-size: 14px; text-align: center; margin-top: 28px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SNP TRANSPORT</p>
+    <h1>ระบบขนส่ง SNP</h1>
+    <p class="lede">จองรถส่งของ เช็กค่าขนส่ง และติดตามสถานะงานได้ในหน้าเดียว</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="เมนูระบบขนส่ง">
+    <button role="tab" data-tab="book" aria-selected="true">จองขนส่ง</button>
+    <button role="tab" data-tab="track" aria-selected="false">ติดตามงาน</button>
+    <button role="tab" data-tab="jobs" aria-selected="false">รายการงาน</button>
+    <button role="tab" data-tab="rates" aria-selected="false">อัตราค่าส่ง</button>
+  </nav>
+
+  <!-- ---- จองขนส่ง ---- -->
+  <section id="tab-book" role="tabpanel">
+    <form id="bookForm" class="card" novalidate>
+      <h2>จองงานขนส่งใหม่</h2>
+
+      <fieldset>
+        <legend>ผู้ส่ง</legend>
+        <div class="grid">
+          <label class="f">ชื่อผู้ส่ง<input name="sName" required autocomplete="name"></label>
+          <label class="f">เบอร์โทร<input name="sPhone" required inputmode="tel" autocomplete="tel" pattern="0[0-9]{8,9}" placeholder="08xxxxxxxx"></label>
+          <label class="f full">ที่อยู่รับของ<textarea name="sAddr" required></textarea></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>ผู้รับ</legend>
+        <div class="grid">
+          <label class="f">ชื่อผู้รับ<input name="rName" required></label>
+          <label class="f">เบอร์โทร<input name="rPhone" required inputmode="tel" pattern="0[0-9]{8,9}" placeholder="08xxxxxxxx"></label>
+          <label class="f full">ที่อยู่ส่งของ<textarea name="rAddr" required></textarea></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>ประเภทรถ</legend>
+        <div class="vehicles" id="vehicleOpts"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>รายละเอียดสินค้า</legend>
+        <div class="grid">
+          <label class="f">ระยะทางโดยประมาณ (กม.)<input name="km" type="number" min="1" step="0.1" required value="10"></label>
+          <label class="f">น้ำหนักรวม (กก.)<input name="kg" type="number" min="0.1" step="0.1" required value="5"></label>
+          <label class="f">วันที่เข้ารับ<input name="date" type="date" required></label>
+          <label class="f">ช่วงเวลา
+            <select name="slot">
+              <option>08:00–12:00</option>
+              <option>12:00–16:00</option>
+              <option>16:00–20:00</option>
+            </select>
+          </label>
+          <label class="f full">ของที่ส่ง / หมายเหตุ<textarea name="note" placeholder="เช่น กล่องอาหาร 3 กล่อง ระวังแตก"></textarea></label>
+          <label class="f full" style="flex-direction:row;align-items:center;gap:8px;color:var(--ink)">
+            <input type="checkbox" name="fragile" style="width:auto"> ของแตกง่าย (+50 บาท)
+          </label>
+          <label class="f full" style="flex-direction:row;align-items:center;gap:8px;color:var(--ink)">
+            <input type="checkbox" name="cod" style="width:auto"> เก็บเงินปลายทาง (COD)
+          </label>
+          <label class="f full" id="codWrap" hidden>ยอดเก็บเงินปลายทาง (บาท)<input name="codAmt" type="number" min="1" step="1"></label>
+        </div>
+      </fieldset>
+
+      <div class="quote" aria-live="polite">
+        <div>ค่าขนส่งโดยประมาณ<small id="quoteDetail"></small></div>
+        <div class="amt" id="quoteAmt">฿0</div>
+      </div>
+
+      <label class="consent">
+        <input type="checkbox" name="consent" required>
+        <span>ยินยอมให้ SNP ใช้ชื่อ เบอร์โทร และที่อยู่ของผู้ส่งและผู้รับ เพื่อเข้ารับ จัดส่ง และติดต่อเรื่องงานขนส่งนี้เท่านั้น ตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (<a href="../">อ่านนโยบาย</a>)</span>
+      </label>
+
+      <button class="btn" type="submit">ยืนยันการจอง</button>
+      <p class="muted" id="formError" role="alert" style="color:var(--bad)"></p>
+    </form>
+
+    <div class="card" id="bookDone" hidden>
+      <h2>จองสำเร็จ</h2>
+      <p>เลขติดตามงานของคุณคือ <span class="tno" id="doneTno"></span></p>
+      <div class="row">
+        <button class="btn sm" type="button" id="copyTno">คัดลอกเลขติดตาม</button>
+        <button class="btn sm ghost" type="button" id="viewTno">ดูสถานะ</button>
+        <button class="btn sm ghost" type="button" id="newBooking">จองงานใหม่</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- ติดตามงาน ---- -->
+  <section id="tab-track" role="tabpanel" hidden>
+    <div class="card">
+      <h2>ติดตามงานขนส่ง</h2>
+      <form class="row" id="trackForm">
+        <input id="trackInput" placeholder="กรอกเลขติดตาม เช่น SNP2610220001" autocapitalize="characters">
+        <button class="btn" type="submit">ค้นหา</button>
+      </form>
+      <div id="trackResult"></div>
+    </div>
+  </section>
+
+  <!-- ---- รายการงาน ---- -->
+  <section id="tab-jobs" role="tabpanel" hidden>
+    <div class="card">
+      <div class="list-head" style="margin-bottom:12px">
+        <h2 style="margin:0">รายการงานทั้งหมด</h2>
+        <div class="row">
+          <select id="filterStatus" style="width:auto"></select>
+          <button class="btn sm ghost" type="button" id="exportCsv">ส่งออก CSV</button>
+        </div>
+      </div>
+      <p class="muted" id="jobSummary"></p>
+      <div id="jobList"></div>
+    </div>
+  </section>
+
+  <!-- ---- อัตราค่าส่ง ---- -->
+  <section id="tab-rates" role="tabpanel" hidden>
+    <div class="card">
+      <h2>อัตราค่าขนส่ง</h2>
+      <table class="rates">
+        <thead><tr><th>ประเภทรถ</th><th>ค่าเริ่มต้น</th><th>ต่อ กม.</th><th>รับน้ำหนักสูงสุด</th></tr></thead>
+        <tbody id="rateRows"></tbody>
+      </table>
+      <p class="muted" style="margin-top:14px">ค่าเริ่มต้นรวมระยะทาง 5 กม.แรก ส่วนที่เกินคิดตามอัตราต่อ กม. ของแตกง่ายบวก 50 บาท เก็บเงินปลายทางคิดค่าธรรมเนียม 2% ของยอด (ขั้นต่ำ 20 บาท) ราคาเป็นค่าประมาณ อาจเปลี่ยนตามระยะทางจริง</p>
+    </div>
+  </section>
+
+  <footer>© SNP Transport · ข้อมูลในหน้านี้เก็บไว้ในเบราว์เซอร์ของเครื่องนี้เท่านั้น</footer>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const VEHICLES = [
+    { id: 'bike',   name: 'มอเตอร์ไซค์', base: 60,  perKm: 8,  maxKg: 20 },
+    { id: 'pickup', name: 'กระบะ',       base: 350, perKm: 15, maxKg: 1000 },
+    { id: 'truck6', name: 'รถ 6 ล้อ',    base: 1500, perKm: 30, maxKg: 5000 },
+  ];
+  const FREE_KM = 5;
+  const STATUSES = [
+    { id: 'booked',    label: 'รับงานแล้ว',     tone: '' },
+    { id: 'picked',    label: 'เข้ารับของแล้ว',  tone: 'warn' },
+    { id: 'transit',   label: 'กำลังขนส่ง',     tone: 'warn' },
+    { id: 'delivered', label: 'ส่งสำเร็จ',      tone: 'ok' },
+  ];
+  const CANCELLED = { id: 'cancelled', label: 'ยกเลิก', tone: 'bad' };
+  const STORE_KEY = 'snp-transport-jobs';
+
+  const $ = (s, el = document) => el.querySelector(s);
+  const baht = n => '฿' + Math.round(n).toLocaleString('th-TH');
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmtTime = iso => new Date(iso).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+  const statusOf = id => STATUSES.find(s => s.id === id) || CANCELLED;
+
+  // ---- storage ----
+  let jobs = [];
+  try { jobs = JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { jobs = []; }
+  const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(jobs)); } catch {} };
+
+  // ---- toast ----
+  let toastTimer;
+  const toast = msg => {
+    const t = $('#toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  };
+
+  // ---- tabs ----
+  const showTab = name => {
+    document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === name));
+    document.querySelectorAll('[role=tabpanel]').forEach(p => p.hidden = p.id !== 'tab-' + name);
+    if (name === 'jobs') renderJobs();
+  };
+  document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+  // ---- pricing ----
+  const quote = ({ vehicle, km, kg, fragile, cod, codAmt }) => {
+    const v = VEHICLES.find(x => x.id === vehicle) || VEHICLES[0];
+    const extraKm = Math.max(0, km - FREE_KM);
+    let total = v.base + extraKm * v.perKm;
+    const parts = [`${v.name} ${baht(v.base)}`];
+    if (extraKm > 0) parts.push(`ระยะเกิน ${extraKm.toFixed(1)} กม. ${baht(extraKm * v.perKm)}`);
+    if (fragile) { total += 50; parts.push('ของแตกง่าย ฿50'); }
+    if (cod && codAmt > 0) { const fee = Math.max(20, codAmt * 0.02); total += fee; parts.push(`COD ${baht(fee)}`); }
+    return { total: Math.round(total), detail: parts.join(' + '), overweight: kg > v.maxKg, vehicle: v };
+  };
+
+  // ---- booking form ----
+  const form = $('#bookForm');
+  $('#vehicleOpts').innerHTML = VEHICLES.map((v, i) => `
+    <label class="vehicle"><input type="radio" name="vehicle" value="${v.id}" ${i === 0 ? 'checked' : ''}>
+      <span><b>${v.name}</b><small>เริ่ม ${baht(v.base)} · ไม่เกิน ${v.maxKg.toLocaleString('th-TH')} กก.</small></span></label>`).join('');
+  $('#rateRows').innerHTML = VEHICLES.map(v =>
+    `<tr><td>${v.name}</td><td>${baht(v.base)}</td><td>${baht(v.perKm)}</td><td>${v.maxKg.toLocaleString('th-TH')} กก.</td></tr>`).join('');
+
+  const today = new Date(); today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+  form.date.value = form.date.min = today.toISOString().slice(0, 10);
+
+  const readForm = () => ({
+    vehicle: form.vehicle.value,
+    km: parseFloat(form.km.value) || 0,
+    kg: parseFloat(form.kg.value) || 0,
+    fragile: form.fragile.checked,
+    cod: form.cod.checked,
+    codAmt: parseFloat(form.codAmt.value) || 0,
+  });
+  const updateQuote = () => {
+    $('#codWrap').hidden = !form.cod.checked;
+    const q = quote(readForm());
+    $('#quoteAmt').textContent = baht(q.total);
+    $('#quoteDetail').textContent = q.overweight
+      ? `น้ำหนักเกินที่${q.vehicle.name}รับได้ กรุณาเลือกรถคันใหญ่ขึ้น`
+      : q.detail;
+  };
+  form.addEventListener('input', updateQuote);
+  updateQuote();
+
+  const newTrackingNo = () => {
+    const d = new Date();
+    const ymd = String(d.getFullYear() % 100).padStart(2, '0') + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+    const sameDay = jobs.filter(j => j.tno.startsWith('SNP' + ymd)).length;
+    return 'SNP' + ymd + String(sameDay + 1).padStart(4, '0');
+  };
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const err = $('#formError');
+    err.textContent = '';
+    const f = readForm();
+    const q = quote(f);
+    if (!form.checkValidity()) {
+      const bad = form.querySelector(':invalid');
+      err.textContent = bad.name === 'consent' ? 'กรุณาให้ความยินยอมก่อนยืนยันการจอง' : 'กรุณากรอกข้อมูลให้ครบและถูกต้อง';
+      bad.focus();
+      return;
+    }
+    if (q.overweight) { err.textContent = `น้ำหนักเกินที่${q.vehicle.name}รับได้ (${q.vehicle.maxKg} กก.)`; return; }
+    if (f.cod && !(f.codAmt > 0)) { err.textContent = 'กรุณากรอกยอดเก็บเงินปลายทาง'; form.codAmt.focus(); return; }
+
+    const now = new Date().toISOString();
+    const job = {
+      tno: newTrackingNo(),
+      createdAt: now,
+      sender: { name: form.sName.value.trim(), phone: form.sPhone.value.trim(), addr: form.sAddr.value.trim() },
+      receiver: { name: form.rName.value.trim(), phone: form.rPhone.value.trim(), addr: form.rAddr.value.trim() },
+      vehicle: f.vehicle, km: f.km, kg: f.kg, fragile: f.fragile,
+      cod: f.cod ? f.codAmt : 0,
+      date: form.date.value, slot: form.slot.value, note: form.note.value.trim(),
+      price: q.total, consentAt: now,
+      status: 'booked',
+      history: [{ status: 'booked', at: now }],
+    };
+    jobs.unshift(job);
+    save();
+    form.hidden = true;
+    $('#doneTno').textContent = job.tno;
+    $('#bookDone').hidden = false;
+    toast('จองสำเร็จ ' + job.tno);
+  });
+
+  $('#copyTno').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText($('#doneTno').textContent); toast('คัดลอกแล้ว'); }
+    catch { toast('คัดลอกไม่สำเร็จ'); }
+  });
+  $('#viewTno').addEventListener('click', () => { $('#trackInput').value = $('#doneTno').textContent; showTab('track'); renderTrack(); });
+  $('#newBooking').addEventListener('click', () => {
+    form.reset(); form.date.value = form.date.min; updateQuote();
+    form.hidden = false; $('#bookDone').hidden = true;
+  });
+
+  // ---- tracking ----
+  const jobDetail = j => {
+    const v = VEHICLES.find(x => x.id === j.vehicle);
+    return `<dl class="kv">
+      <dt>ผู้ส่ง</dt><dd>${esc(j.sender.name)} · ${esc(j.sender.phone)}<br><span class="muted">${esc(j.sender.addr)}</span></dd>
+      <dt>ผู้รับ</dt><dd>${esc(j.receiver.name)} · ${esc(j.receiver.phone)}<br><span class="muted">${esc(j.receiver.addr)}</span></dd>
+      <dt>รถ</dt><dd>${esc(v ? v.name : j.vehicle)} · ${j.km} กม. · ${j.kg} กก.${j.fragile ? ' · ของแตกง่าย' : ''}</dd>
+      <dt>เข้ารับ</dt><dd>${esc(j.date)} ${esc(j.slot)}</dd>
+      <dt>ค่าส่ง</dt><dd>${baht(j.price)}${j.cod ? ` · COD ${baht(j.cod)}` : ''}</dd>
+      ${j.note ? `<dt>หมายเหตุ</dt><dd>${esc(j.note)}</dd>` : ''}
+    </dl>`;
+  };
+  const timeline = j => {
+    const when = id => (j.history.find(h => h.status === id) || {}).at;
+    const steps = j.status === 'cancelled'
+      ? [...j.history.map(h => statusOf(h.status))]
+      : STATUSES;
+    return `<ol class="timeline">${steps.map(s => {
+      const at = when(s.id);
+      return `<li class="${at ? 'done' : ''}">${s.label}${at ? `<time>${fmtTime(at)}</time>` : ''}</li>`;
+    }).join('')}</ol>`;
+  };
+  const renderTrack = () => {
+    const q = $('#trackInput').value.trim().toUpperCase();
+    const out = $('#trackResult');
+    if (!q) { out.innerHTML = ''; return; }
+    const j = jobs.find(x => x.tno === q);
+    if (!j) { out.innerHTML = `<p class="empty">ไม่พบเลขติดตาม ${esc(q)}</p>`; return; }
+    const s = statusOf(j.status);
+    out.innerHTML = `<div style="margin-top:18px">
+      <div class="list-head"><span class="tno">${esc(j.tno)}</span><span class="badge ${s.tone}">${s.label}</span></div>
+      ${timeline(j)}${jobDetail(j)}</div>`;
+  };
+  $('#trackForm').addEventListener('submit', e => { e.preventDefault(); renderTrack(); });
+
+  // ---- job list ----
+  const filter = $('#filterStatus');
+  filter.innerHTML = `<option value="">ทุกสถานะ</option>` +
+    [...STATUSES, CANCELLED].map(s => `<option value="${s.id}">${s.label}</option>`).join('');
+  filter.addEventListener('change', () => renderJobs());
+
+  const setStatus = (tno, status) => {
+    const j = jobs.find(x => x.tno === tno);
+    if (!j) return;
+    j.status = status;
+    j.history.push({ status, at: new Date().toISOString() });
+    save(); renderJobs();
+    toast(`${tno}: ${statusOf(status).label}`);
+  };
+
+  const renderJobs = () => {
+    const list = filter.value ? jobs.filter(j => j.status === filter.value) : jobs;
+    const active = jobs.filter(j => !['delivered', 'cancelled'].includes(j.status)).length;
+    const revenue = jobs.filter(j => j.status === 'delivered').reduce((a, j) => a + j.price, 0);
+    $('#jobSummary').textContent = `ทั้งหมด ${jobs.length} งาน · กำลังดำเนินการ ${active} · รายได้งานที่ส่งสำเร็จ ${baht(revenue)}`;
+    $('#exportCsv').disabled = jobs.length === 0;
+    if (!list.length) { $('#jobList').innerHTML = `<p class="empty">ยังไม่มีงาน</p>`; return; }
+    $('#jobList').innerHTML = list.map(j => {
+      const s = statusOf(j.status);
+      const idx = STATUSES.findIndex(x => x.id === j.status);
+      const next = idx >= 0 && idx < STATUSES.length - 1 ? STATUSES[idx + 1] : null;
+      const canCancel = j.status === 'booked' || j.status === 'picked';
+      return `<div class="list-item">
+        <div class="list-head"><span class="tno">${esc(j.tno)}</span><span class="badge ${s.tone}">${s.label}</span></div>
+        <div class="muted">${esc(j.sender.name)} → ${esc(j.receiver.name)} · ${baht(j.price)} · เข้ารับ ${esc(j.date)} ${esc(j.slot)}</div>
+        <div class="row" style="margin-top:8px">
+          ${next ? `<button class="btn sm" data-act="next" data-tno="${esc(j.tno)}" data-status="${next.id}">→ ${next.label}</button>` : ''}
+          ${canCancel ? `<button class="btn sm ghost" data-act="cancel" data-tno="${esc(j.tno)}">ยกเลิก</button>` : ''}
+          <button class="btn sm ghost" data-act="view" data-tno="${esc(j.tno)}">ดูรายละเอียด</button>
+          <button class="btn sm ghost" data-act="delete" data-tno="${esc(j.tno)}">ลบข้อมูล</button>
+        </div>
+      </div>`;
+    }).join('');
+  };
+
+  $('#jobList').addEventListener('click', e => {
+    const b = e.target.closest('button[data-act]');
+    if (!b) return;
+    const { act, tno } = b.dataset;
+    if (act === 'next') setStatus(tno, b.dataset.status);
+    else if (act === 'cancel' && confirm(`ยกเลิกงาน ${tno}?`)) setStatus(tno, 'cancelled');
+    else if (act === 'view') { $('#trackInput').value = tno; showTab('track'); renderTrack(); }
+    else if (act === 'delete' && confirm(`ลบข้อมูลงาน ${tno} รวมชื่อ เบอร์โทร และที่อยู่ออกถาวร?`)) {
+      jobs = jobs.filter(j => j.tno !== tno); save(); renderJobs(); toast('ลบข้อมูลแล้ว');
+    }
+  });
+
+  $('#exportCsv').addEventListener('click', () => {
+    const cols = ['เลขติดตาม', 'สถานะ', 'สร้างเมื่อ', 'ผู้ส่ง', 'เบอร์ผู้ส่ง', 'ที่อยู่รับ', 'ผู้รับ', 'เบอร์ผู้รับ', 'ที่อยู่ส่ง', 'รถ', 'กม.', 'กก.', 'วันเข้ารับ', 'ช่วงเวลา', 'ค่าส่ง', 'COD', 'หมายเหตุ'];
+    const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows = jobs.map(j => [
+      j.tno, statusOf(j.status).label, fmtTime(j.createdAt),
+      j.sender.name, j.sender.phone, j.sender.addr,
+      j.receiver.name, j.receiver.phone, j.receiver.addr,
+      (VEHICLES.find(v => v.id === j.vehicle) || {}).name, j.km, j.kg, j.date, j.slot, j.price, j.cod, j.note,
+    ].map(q).join(','));
+    const blob = new Blob(['﻿' + [cols.map(q).join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `snp-jobs-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+})();
+</script>
+</body>
+</html>
