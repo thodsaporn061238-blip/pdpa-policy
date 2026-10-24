@@ -52,17 +52,17 @@
     },
     "snpTransport": {
       "jobs": {
-        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
-        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)"
+        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)"
       },
       "customers": {
-        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
-        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)"
+        ".read": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)",
+        ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)"
       },
       "portal": {
         "$code": {
           ".read": "$code.length >= 12",
-          ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)"
+          ".write": "auth != null && (auth.token.email == 'thodsaporn061238@gmail.com' || root.child('coOwners').child(auth.uid).val() == true || root.child('companyBilling/authorizedUsers').child(auth.uid).child('active').val() == true)"
         }
       }
     }
